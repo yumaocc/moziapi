@@ -86,15 +86,30 @@ func (s *FrontendServer) InvalidateCache() {
 // Middleware returns the Gin middleware handler
 func (s *FrontendServer) Middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		path := c.Request.URL.Path
+		requestPath := c.Request.URL.Path
 
 		// Skip API routes
-		if shouldBypassEmbeddedFrontend(path) {
+		if shouldBypassEmbeddedFrontend(requestPath) {
 			c.Next()
 			return
 		}
 
-		cleanPath := strings.TrimPrefix(path, "/")
+		if (c.Request.Method == http.MethodGet || c.Request.Method == http.MethodHead) && normalizeSPAPath(requestPath) == "/home" {
+			c.Redirect(http.StatusPermanentRedirect, "/")
+			c.Abort()
+			return
+		}
+
+		switch normalizeSPAPath(requestPath) {
+		case "/robots.txt":
+			s.serveRobots(c)
+			return
+		case "/sitemap.xml":
+			s.serveSitemap(c)
+			return
+		}
+
+		cleanPath := strings.TrimPrefix(requestPath, "/")
 		if cleanPath == "" {
 			cleanPath = "index.html"
 		}
@@ -149,20 +164,7 @@ func (s *FrontendServer) serveIndexHTML(c *gin.Context) {
 	// Check cache first
 	cached := s.cache.Get()
 	if cached != nil {
-		// Check If-None-Match for 304 response
-		if match := c.GetHeader("If-None-Match"); match == cached.ETag {
-			c.Status(http.StatusNotModified)
-			c.Abort()
-			return
-		}
-
-		// Replace nonce placeholder with actual nonce before serving
-		content := replaceNoncePlaceholder(cached.Content, nonce)
-
-		c.Header("ETag", cached.ETag)
-		c.Header("Cache-Control", "no-cache") // Must revalidate
-		c.Data(http.StatusOK, "text/html; charset=utf-8", content)
-		c.Abort()
+		s.serveCachedIndexHTML(c, cached, nonce)
 		return
 	}
 
@@ -172,32 +174,97 @@ func (s *FrontendServer) serveIndexHTML(c *gin.Context) {
 
 	settings, err := s.settings.GetPublicSettingsForInjection(ctx)
 	if err != nil {
-		// Fallback: serve without injection
-		c.Data(http.StatusOK, "text/html; charset=utf-8", s.baseHTML)
-		c.Abort()
+		s.serveFallbackIndexHTML(c, nonce)
 		return
 	}
 
 	settingsJSON, err := json.Marshal(settings)
 	if err != nil {
-		// Fallback: serve without injection
-		c.Data(http.StatusOK, "text/html; charset=utf-8", s.baseHTML)
-		c.Abort()
+		s.serveFallbackIndexHTML(c, nonce)
 		return
 	}
 
 	rendered := s.injectSettings(settingsJSON)
 	s.cache.Set(rendered, settingsJSON)
 
-	// Replace nonce placeholder with actual nonce before serving
-	content := replaceNoncePlaceholder(rendered, nonce)
-
 	cached = s.cache.Get()
-	if cached != nil {
-		c.Header("ETag", cached.ETag)
+	if cached == nil {
+		s.serveFallbackIndexHTML(c, nonce)
+		return
+	}
+	s.serveCachedIndexHTML(c, cached, nonce)
+}
+
+func (s *FrontendServer) serveCachedIndexHTML(c *gin.Context, cached *CachedHTML, nonce string) {
+	baseURL := publicRequestBaseURL(c.Request)
+	meta := routeSEOForPath(c.Request.URL.Path, cached.SEOSettings)
+	etag := routeETag(cached.ETag, baseURL, c.Request.URL.Path, meta.Status)
+
+	// Conditional responses are useful for successful SPA documents. Keep 404
+	// responses explicit so crawlers never receive a 304 for an unknown URL.
+	if meta.Status == http.StatusOK && c.GetHeader("If-None-Match") == etag {
+		c.Header("ETag", etag)
+		c.Status(http.StatusNotModified)
+		c.Abort()
+		return
+	}
+
+	content := replaceNoncePlaceholder(cached.Content, nonce)
+	content = renderRouteSEO(content, meta, cached.SEOSettings, baseURL, nonce)
+	s.writeIndexHTMLResponse(c, content, meta, etag)
+}
+
+func (s *FrontendServer) serveFallbackIndexHTML(c *gin.Context, nonce string) {
+	settings := defaultSiteSEOSettings()
+	meta := routeSEOForPath(c.Request.URL.Path, settings)
+	content := replaceNoncePlaceholder(s.baseHTML, nonce)
+	content = renderRouteSEO(content, meta, settings, publicRequestBaseURL(c.Request), nonce)
+	s.writeIndexHTMLResponse(c, content, meta, "")
+}
+
+func (s *FrontendServer) writeIndexHTMLResponse(c *gin.Context, content []byte, meta routeSEO, etag string) {
+	if etag != "" {
+		c.Header("ETag", etag)
 	}
 	c.Header("Cache-Control", "no-cache")
-	c.Data(http.StatusOK, "text/html; charset=utf-8", content)
+	c.Header("Vary", "X-Forwarded-Proto")
+	if !meta.Indexable {
+		c.Header("X-Robots-Tag", noindexRobotsContent)
+	}
+	c.Data(meta.Status, "text/html; charset=utf-8", content)
+	c.Abort()
+}
+
+func (s *FrontendServer) currentSEOSettings(ctx context.Context) siteSEOSettings {
+	if cached := s.cache.Get(); cached != nil {
+		return cached.SEOSettings
+	}
+	settings, err := s.settings.GetPublicSettingsForInjection(ctx)
+	if err != nil {
+		return defaultSiteSEOSettings()
+	}
+	settingsJSON, err := json.Marshal(settings)
+	if err != nil {
+		return defaultSiteSEOSettings()
+	}
+	return parseSiteSEOSettings(settingsJSON)
+}
+
+func (s *FrontendServer) serveRobots(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 2*time.Second)
+	defer cancel()
+	settings := s.currentSEOSettings(ctx)
+	c.Header("Cache-Control", "public, max-age=3600")
+	c.Data(http.StatusOK, "text/plain; charset=utf-8", robotsText(publicRequestBaseURL(c.Request), settings.BackendModeEnabled))
+	c.Abort()
+}
+
+func (s *FrontendServer) serveSitemap(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 2*time.Second)
+	defer cancel()
+	settings := s.currentSEOSettings(ctx)
+	c.Header("Cache-Control", "public, max-age=3600")
+	c.Data(http.StatusOK, "application/xml; charset=utf-8", sitemapXML(publicRequestBaseURL(c.Request), settings.BackendModeEnabled))
 	c.Abort()
 }
 
@@ -309,14 +376,33 @@ func ServeEmbeddedFrontend() gin.HandlerFunc {
 	overrideDir := filepath.Join("data", "public")
 
 	return func(c *gin.Context) {
-		path := c.Request.URL.Path
+		requestPath := c.Request.URL.Path
 
-		if shouldBypassEmbeddedFrontend(path) {
+		if shouldBypassEmbeddedFrontend(requestPath) {
 			c.Next()
 			return
 		}
 
-		cleanPath := strings.TrimPrefix(path, "/")
+		if (c.Request.Method == http.MethodGet || c.Request.Method == http.MethodHead) && normalizeSPAPath(requestPath) == "/home" {
+			c.Redirect(http.StatusPermanentRedirect, "/")
+			c.Abort()
+			return
+		}
+
+		switch normalizeSPAPath(requestPath) {
+		case "/robots.txt":
+			c.Header("Cache-Control", "public, max-age=3600")
+			c.Data(http.StatusOK, "text/plain; charset=utf-8", robotsText(publicRequestBaseURL(c.Request), false))
+			c.Abort()
+			return
+		case "/sitemap.xml":
+			c.Header("Cache-Control", "public, max-age=3600")
+			c.Data(http.StatusOK, "application/xml; charset=utf-8", sitemapXML(publicRequestBaseURL(c.Request), false))
+			c.Abort()
+			return
+		}
+
+		cleanPath := strings.TrimPrefix(requestPath, "/")
 		if cleanPath == "" {
 			cleanPath = "index.html"
 		}
@@ -385,7 +471,15 @@ func serveIndexHTML(c *gin.Context, fsys fs.FS) {
 		return
 	}
 
-	c.Data(http.StatusOK, "text/html; charset=utf-8", content)
+	settings := defaultSiteSEOSettings()
+	meta := routeSEOForPath(c.Request.URL.Path, settings)
+	nonce := middleware.GetNonceFromContext(c)
+	content = renderRouteSEO(replaceNoncePlaceholder(content, nonce), meta, settings, publicRequestBaseURL(c.Request), nonce)
+	c.Header("Cache-Control", "no-cache")
+	if !meta.Indexable {
+		c.Header("X-Robots-Tag", noindexRobotsContent)
+	}
+	c.Data(meta.Status, "text/html; charset=utf-8", content)
 	c.Abort()
 }
 

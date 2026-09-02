@@ -264,16 +264,39 @@ func TestCalculateCreateOrderPayAmountForSubscriptionKeepsDirectPriceWhenRateDis
 	}
 }
 
-// 汇率只作用于订阅订单，余额充值订单不受影响。
-func TestCalculateCreateOrderPayAmountForBalanceIgnoresSubscriptionRate(t *testing.T) {
+func TestCalculateCreateOrderPayAmountForBalanceConvertsCNYWhenRateConfigured(t *testing.T) {
 	t.Parallel()
 
 	amountStr, amount, err := calculateCreateOrderPayAmountForOrderType(50, 0, "CNY", payment.OrderTypeBalance, 7.15)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+	if amountStr != "357.50" || amount != 357.5 {
+		t.Fatalf("balance CNY pay amount = (%q, %v), want (357.50, 357.5)", amountStr, amount)
+	}
+}
+
+func TestCalculateCreateOrderPayAmountForBalanceAppliesFeeAfterCNYConversion(t *testing.T) {
+	t.Parallel()
+
+	amountStr, amount, err := calculateCreateOrderPayAmountForOrderType(10, 2.5, "CNY", payment.OrderTypeBalance, 7.15)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if amountStr != "73.29" || amount != 73.29 {
+		t.Fatalf("balance CNY pay amount with fee = (%q, %v), want (73.29, 73.29)", amountStr, amount)
+	}
+}
+
+func TestCalculateCreateOrderPayAmountForBalanceKeepsDirectAmountWhenRateDisabled(t *testing.T) {
+	t.Parallel()
+
+	amountStr, amount, err := calculateCreateOrderPayAmountForOrderType(50, 0, "CNY", payment.OrderTypeBalance, 0)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	if amountStr != "50.00" || amount != 50 {
-		t.Fatalf("balance CNY pay amount = (%q, %v), want (50.00, 50)", amountStr, amount)
+		t.Fatalf("balance CNY pay amount without rate = (%q, %v), want (50.00, 50)", amountStr, amount)
 	}
 }
 
@@ -288,6 +311,56 @@ func TestCalculateCreditedBalanceStillUsesRechargeMultiplier(t *testing.T) {
 	got = calculateCreditedBalance(5, 10)
 	if got != 50 {
 		t.Fatalf("credited balance = %v, want 50", got)
+	}
+}
+
+func TestCalculateGatewayRefundAmountPreservesCrossCurrencyRatio(t *testing.T) {
+	t.Parallel()
+
+	got := calculateGatewayRefundAmount(30, 72, 15, "CNY")
+	if got != 36 {
+		t.Fatalf("gateway refund amount = %v, want 36", got)
+	}
+}
+
+func TestPaymentStatsUseGatewayCurrencyAmounts(t *testing.T) {
+	t.Parallel()
+
+	now := time.Now()
+	orders := []*dbent.PaymentOrder{
+		{
+			UserID:      1,
+			UserEmail:   "balance@example.com",
+			Amount:      30,
+			PayAmount:   72,
+			PaymentType: payment.TypeWxpay,
+			OrderType:   payment.OrderTypeBalance,
+			PaidAt:      &now,
+			ProviderSnapshot: map[string]any{
+				"schema_version":       3,
+				"requested_amount_usd": 10,
+			},
+		},
+		{
+			UserID:      2,
+			UserEmail:   "subscription@example.com",
+			Amount:      20,
+			PayAmount:   144,
+			PaymentType: payment.TypeWxpay,
+			OrderType:   payment.OrderTypeSubscription,
+			PaidAt:      &now,
+		},
+	}
+
+	stats := &DashboardStats{}
+	computeBasicStats(stats, orders, now.Add(-time.Minute))
+	if stats.TotalAmount["CNY"] != 216 || stats.TodayAmount["CNY"] != 216 || stats.AvgAmount["CNY"] != 108 {
+		t.Fatalf("CNY stats = total:%v today:%v avg:%v, want 216/216/108", stats.TotalAmount, stats.TodayAmount, stats.AvgAmount)
+	}
+
+	methods := buildMethodDistribution(orders)
+	if len(methods) != 1 || methods[0].Amount["CNY"] != 216 {
+		t.Fatalf("method stats = %#v, want one CNY total of 216", methods)
 	}
 }
 
@@ -344,7 +417,7 @@ func TestBuildPaymentSubjectAppliesAffixToSubscriptionPlanProductName(t *testing
 		ProductName: "Claude Pro",
 	}
 
-	got := svc.buildPaymentSubject(plan, 0, cfg, nil)
+	got := svc.buildPaymentSubject(plan, 0, cfg)
 	if got != "PRE Claude Pro SUF" {
 		t.Fatalf("buildPaymentSubject() = %q, want %q", got, "PRE Claude Pro SUF")
 	}
@@ -360,7 +433,7 @@ func TestBuildPaymentSubjectAppliesAffixToSubscriptionPlanDefaultName(t *testing
 	}
 	plan := &dbent.SubscriptionPlan{Name: "Team Monthly"}
 
-	got := svc.buildPaymentSubject(plan, 0, cfg, nil)
+	got := svc.buildPaymentSubject(plan, 0, cfg)
 	if got != "PRE Sub2API Subscription Team Monthly SUF" {
 		t.Fatalf("buildPaymentSubject() = %q, want %q", got, "PRE Sub2API Subscription Team Monthly SUF")
 	}

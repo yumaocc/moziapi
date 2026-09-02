@@ -38,6 +38,9 @@ func TestSanitizeAdminPaymentOrderForResponseAddsCurrency(t *testing.T) {
 	if got.Currency != "USD" {
 		t.Fatalf("expected currency USD, got %q", got.Currency)
 	}
+	if got.RequestedAmount != 100 {
+		t.Fatalf("expected requested amount 100, got %v", got.RequestedAmount)
+	}
 
 	body, err := json.Marshal(got)
 	if err != nil {

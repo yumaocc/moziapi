@@ -168,7 +168,9 @@ func TestUsageLogFromService_KeepsUserBillingAndIPWithoutAdminCostFields(t *test
 	require.Equal(t, 0.04, userDTO.CacheReadCost)
 	require.Equal(t, 0.10, userDTO.TotalCost)
 	require.Equal(t, 0.08, userDTO.ActualCost)
-	require.Equal(t, 0.8, userDTO.RateMultiplier)
+	require.Equal(t, 1.0, userDTO.RateMultiplier)
+	adminDTO := UsageLogFromServiceAdmin(log)
+	require.Equal(t, 0.8, adminDTO.RateMultiplier)
 	require.NotNil(t, userDTO.IPAddress)
 	require.Equal(t, ipAddress, *userDTO.IPAddress)
 

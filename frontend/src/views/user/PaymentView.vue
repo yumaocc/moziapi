@@ -1,6 +1,6 @@
 <template>
   <AppLayout>
-    <div class="mx-auto max-w-4xl space-y-6">
+    <div class="mx-auto max-w-5xl space-y-5">
       <div v-if="loading" class="flex items-center justify-center py-20">
         <div class="h-8 w-8 animate-spin rounded-full border-4 border-primary-500 border-t-transparent"></div>
       </div>
@@ -8,7 +8,7 @@
         <!-- Tab Switcher (hide during payment and subscription confirm) -->
         <div v-if="tabs.length > 1 && paymentPhase === 'select' && !selectedPlan" class="flex space-x-1 rounded-xl bg-gray-100 p-1 dark:bg-dark-800">
           <button v-for="tab in tabs" :key="tab.key"
-            class="flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-all"
+            class="flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-[background-color,color,box-shadow] duration-150"
             :class="activeTab === tab.key ? 'bg-white text-gray-900 shadow dark:bg-dark-700 dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'"
             @click="activeTab = tab.key">{{ tab.label }}</button>
         </div>
@@ -35,62 +35,106 @@
         <template v-else>
           <!-- Top-up Tab -->
           <template v-if="activeTab === 'recharge'">
-            <!-- Recharge Account Card -->
-            <div class="card p-5">
-              <p class="text-xs font-medium text-gray-400 dark:text-gray-500">{{ t('payment.rechargeAccount') }}</p>
-              <p class="mt-1 text-base font-semibold text-gray-900 dark:text-white">{{ user?.username || '' }}</p>
-              <p class="mt-0.5 text-sm font-medium text-green-600 dark:text-green-400">{{ t('payment.currentBalance') }}: {{ user?.balance?.toFixed(2) || '0.00' }}</p>
+            <!-- Recharge Account Summary -->
+            <div class="card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+              <div class="min-w-0">
+                <p class="text-xs font-medium text-gray-400 dark:text-gray-500">{{ t('payment.rechargeAccount') }}</p>
+                <p class="mt-1 truncate text-sm font-semibold text-gray-900 dark:text-white">{{ user?.username || '' }}</p>
+              </div>
+              <div class="sm:text-right">
+                <p class="text-xs text-gray-400 dark:text-gray-500">{{ t('payment.currentBalance') }}</p>
+                <p class="mt-1 text-lg font-bold tabular-nums text-gray-900 dark:text-white">{{ formatPaymentAmount(user?.balance ?? 0, 'USD', localeCode) }}</p>
+              </div>
             </div>
             <div v-if="enabledMethods.length === 0" class="card py-16 text-center">
               <p class="text-gray-500 dark:text-gray-400">{{ t('payment.notAvailable') }}</p>
             </div>
             <template v-else>
-            <div class="card p-6">
-              <AmountInput
-                v-model="amount"
-                :amounts="[10, 20, 50, 100, 200, 500, 1000, 2000, 5000]"
-                :min="globalMinAmount"
-                :max="globalMaxAmount"
-              />
-              <p v-if="amountError" class="mt-2 text-xs text-amber-600 dark:text-amber-300">{{ amountError }}</p>
+            <div class="purchase-workbench grid grid-cols-1 gap-5 lg:grid-cols-5 lg:items-start">
+              <section class="card p-5 sm:p-6 lg:col-span-3 lg:row-start-1" aria-labelledby="recharge-amount-title">
+                <div class="mb-5 flex flex-col gap-3 border-b border-gray-100 pb-5 sm:flex-row sm:items-start sm:justify-between dark:border-dark-600">
+                  <div>
+                    <h2 id="recharge-amount-title" class="text-lg font-bold text-gray-950 dark:text-white">选择充值金额</h2>
+                    <p class="mt-1 text-sm leading-6 text-gray-500 dark:text-gray-400">每个金额都已列出活动赠送和预计到账，无需自行计算。</p>
+                  </div>
+                  <span class="inline-flex w-fit shrink-0 items-center gap-1.5 rounded-md border border-primary-200 bg-primary-50 px-2.5 py-1 text-xs font-bold text-primary-800 dark:border-primary-800 dark:bg-primary-950/50 dark:text-primary-200">
+                    <Icon name="gift" size="sm" :stroke-width="2" />
+                    到账 ×{{ balanceRechargeMultiplierLabel }}
+                  </span>
+                </div>
+                <AmountInput
+                  v-model="amount"
+                  :amounts="[10, 20, 50, 100, 200, 500, 1000, 2000, 5000]"
+                  :min="globalMinAmount"
+                  :max="globalMaxAmount"
+                  :multiplier="balanceRechargeMultiplier"
+                  currency="USD"
+                />
+                <p v-if="amountError" role="alert" class="mt-3 rounded-md bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">{{ amountError }}</p>
+              </section>
+
+              <aside class="card overflow-hidden lg:col-span-2 lg:col-start-4 lg:row-span-2 lg:row-start-1 lg:sticky lg:top-5" aria-labelledby="recharge-preview-title">
+                <div class="border-b border-primary-100 bg-primary-50/70 p-5 dark:border-primary-900 dark:bg-primary-950/30 sm:p-6">
+                  <p class="text-xs font-bold text-primary-700 dark:text-primary-300">本次到账</p>
+                  <h2 id="recharge-preview-title" class="mt-2 text-sm font-medium text-gray-600 dark:text-gray-300">预计到账余额</h2>
+                  <p class="mt-1 text-4xl font-bold tracking-tight tabular-nums text-primary-700 dark:text-primary-300">
+                    {{ validAmount > 0 ? formatUSDAmount(creditedAmount) : '$—' }}
+                  </p>
+                  <p class="mt-2 min-h-5 text-xs leading-5 text-gray-500 dark:text-gray-400">
+                    <template v-if="validAmount > 0 && rechargeBonusAmount > 0">其中活动额外赠送 <strong class="text-primary-800 dark:text-primary-200">{{ formatUSDAmount(rechargeBonusAmount) }}</strong></template>
+                    <template v-else-if="validAmount > 0">本次充值无额外赠送</template>
+                    <template v-else>选择左侧金额后，这里会显示最终到账结果。</template>
+                  </p>
+                </div>
+                <div class="p-5 sm:p-6">
+                  <dl class="space-y-3 text-sm">
+                    <div class="flex items-center justify-between gap-4">
+                      <dt class="text-gray-500 dark:text-gray-400">充值本金</dt>
+                      <dd class="font-semibold tabular-nums text-gray-900 dark:text-white">{{ validAmount > 0 ? formatUSDAmount(validAmount) : '$—' }}</dd>
+                    </div>
+                    <div class="flex items-center justify-between gap-4">
+                      <dt class="text-gray-500 dark:text-gray-400">{{ t('payment.promotionalGift') }}</dt>
+                      <dd class="font-bold tabular-nums text-primary-700 dark:text-primary-300">{{ validAmount > 0 ? `+${formatUSDAmount(rechargeBonusAmount)}` : '$—' }}</dd>
+                    </div>
+                    <div class="flex items-center justify-between gap-4 border-t border-gray-200 pt-3 dark:border-dark-600">
+                      <dt class="font-semibold text-gray-700 dark:text-gray-200">{{ t('payment.creditedBalance') }}</dt>
+                      <dd class="text-lg font-bold tabular-nums text-gray-950 dark:text-white">{{ validAmount > 0 ? formatUSDAmount(creditedAmount) : '$—' }}</dd>
+                    </div>
+                  </dl>
+
+                  <div v-if="validAmount > 0" class="mt-5 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-dark-600 dark:bg-dark-800/70">
+                    <div class="flex items-center justify-between gap-4 text-xs">
+                      <span class="text-gray-500 dark:text-gray-400">{{ t('payment.gatewaySettlement') }}</span>
+                      <strong class="tabular-nums text-gray-800 dark:text-gray-200">{{ formatSelectedPaymentAmount(rechargeGatewayBaseAmount) }}</strong>
+                    </div>
+                    <div v-if="feeRate > 0" class="mt-2 flex items-center justify-between gap-4 text-xs">
+                      <span class="text-gray-500 dark:text-gray-400">{{ t('payment.fee') }}（{{ feeRate }}%）</span>
+                      <strong class="tabular-nums text-gray-800 dark:text-gray-200">{{ formatSelectedPaymentAmount(rechargeGatewayFeeAmount) }}</strong>
+                    </div>
+                    <p v-if="selectedCurrency === DEFAULT_PAYMENT_CURRENCY && paymentUsdToCnyRate > 0" class="mt-2 border-t border-gray-200 pt-2 text-[11px] leading-5 text-gray-500 dark:border-dark-600 dark:text-gray-400">
+                      {{ t('payment.usdToCnySettlementHint', { rate: paymentUsdToCnyRateLabel }) }}
+                    </p>
+                  </div>
+
+                  <button :class="['btn mt-5 min-h-[48px] w-full whitespace-nowrap px-4 text-base font-semibold', paymentButtonClass]" :disabled="!canSubmit || submitting" @click="handleSubmitRecharge">
+                    <span v-if="submitting" class="flex items-center justify-center gap-2">
+                      <span class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                      {{ t('common.processing') }}
+                    </span>
+                    <span v-else>{{ validAmount > 0 ? `${t('payment.createOrder')} ${formatSelectedPaymentAmount(rechargeGatewayTotalAmount)}` : '请先选择充值金额' }}</span>
+                  </button>
+                  <p class="mt-3 text-center text-[11px] leading-5 text-gray-400 dark:text-gray-500">到账余额 = 充值本金 + 活动赠送</p>
+                </div>
+              </aside>
+
+              <section v-if="enabledMethods.length >= 1" class="card p-5 sm:p-6 lg:col-span-3 lg:row-start-2">
+                <PaymentMethodSelector
+                  :methods="methodOptions"
+                  :selected="selectedMethod"
+                  @select="selectedMethod = $event"
+                />
+              </section>
             </div>
-            <div v-if="enabledMethods.length >= 1" class="card p-6">
-              <PaymentMethodSelector
-                :methods="methodOptions"
-                :selected="selectedMethod"
-                @select="selectedMethod = $event"
-              />
-            </div>
-            <div v-if="validAmount > 0" class="card p-6">
-              <div class="space-y-2 text-sm">
-                <div class="flex justify-between">
-                  <span class="text-gray-500 dark:text-gray-400">{{ t('payment.paymentAmount') }}</span>
-                  <span class="text-gray-900 dark:text-white">{{ formatSelectedPaymentAmount(validAmount) }}</span>
-                </div>
-                <div v-if="feeRate > 0" class="flex justify-between">
-                  <span class="text-gray-500 dark:text-gray-400">{{ t('payment.fee') }} ({{ feeRate }}%)</span>
-                  <span class="text-gray-900 dark:text-white">{{ formatSelectedPaymentAmount(feeAmount) }}</span>
-                </div>
-                <div v-if="feeRate > 0" class="flex justify-between border-t border-gray-200 pt-2 dark:border-dark-600">
-                  <span class="font-medium text-gray-700 dark:text-gray-300">{{ t('payment.actualPay') }}</span>
-                  <span class="text-lg font-bold text-primary-600 dark:text-primary-400">{{ formatSelectedPaymentAmount(totalAmount) }}</span>
-                </div>
-                <div v-if="balanceRechargeMultiplier !== 1" class="flex justify-between" :class="{ 'border-t border-gray-200 pt-2 dark:border-dark-600': feeRate <= 0 }">
-                  <span class="text-gray-500 dark:text-gray-400">{{ t('payment.creditedBalance') }}</span>
-                  <span class="text-gray-900 dark:text-white">${{ creditedAmount.toFixed(2) }}</span>
-                </div>
-                <p v-if="balanceRechargeMultiplier !== 1" class="border-t border-gray-200 pt-2 text-xs text-gray-500 dark:border-dark-600 dark:text-gray-400">
-                  {{ t('payment.rechargeRatePreview', { usd: balanceRechargeMultiplier.toFixed(2) }) }}
-                </p>
-              </div>
-            </div>
-            <button :class="['btn w-full py-3 text-base font-medium', paymentButtonClass]" :disabled="!canSubmit || submitting" @click="handleSubmitRecharge">
-              <span v-if="submitting" class="flex items-center justify-center gap-2">
-                <span class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
-                {{ t('common.processing') }}
-              </span>
-              <span v-else>{{ t('payment.createOrder') }} {{ formatSelectedPaymentAmount(totalAmount) }}</span>
-            </button>
             </template>
           </template>
           <!-- Subscribe Tab -->
@@ -108,9 +152,9 @@
                 <!-- Price -->
                 <div class="flex items-baseline gap-2">
                   <span v-if="selectedPlan.original_price" class="text-sm text-gray-400 line-through dark:text-gray-500">
-                    {{ formatSelectedSubscriptionPaymentAmount(selectedPlan.original_price) }}
+                    {{ formatUSDAmount(selectedPlan.original_price) }}
                   </span>
-                  <span :class="['text-3xl font-bold', planTextClass]">{{ formatSelectedSubscriptionPaymentAmount(selectedPlan.price) }}</span>
+                  <span :class="['text-3xl font-bold', planTextClass]">{{ formatUSDAmount(selectedPlan.price) }}</span>
                   <span class="text-sm text-gray-500 dark:text-gray-400">/ {{ planValiditySuffix }}</span>
                 </div>
                 <!-- Description -->
@@ -156,20 +200,27 @@
                   @select="selectedMethod = $event"
                 />
               </div>
-              <div v-if="feeRate > 0 && selectedPlan.price > 0" class="card p-6">
+              <div v-if="selectedPlan.price > 0" class="card p-6">
                 <div class="space-y-2 text-sm">
                   <div class="flex justify-between">
                     <span class="text-gray-500 dark:text-gray-400">{{ t('payment.amountLabel') }}</span>
+                    <span class="font-medium text-gray-900 dark:text-white">{{ formatUSDAmount(selectedPlan.price) }}</span>
+                  </div>
+                  <div class="flex justify-between border-t border-gray-200 pt-2 dark:border-dark-600">
+                    <span class="text-gray-500 dark:text-gray-400">{{ t('payment.gatewaySettlement') }}</span>
                     <span class="text-gray-900 dark:text-white">{{ formatSelectedPaymentAmount(subPaymentAmount) }}</span>
                   </div>
-                  <div class="flex justify-between">
+                  <div v-if="feeRate > 0" class="flex justify-between">
                     <span class="text-gray-500 dark:text-gray-400">{{ t('payment.fee') }} ({{ feeRate }}%)</span>
                     <span class="text-gray-900 dark:text-white">{{ formatSelectedPaymentAmount(subFeeAmount) }}</span>
                   </div>
-                  <div class="flex justify-between border-t border-gray-200 pt-2 dark:border-dark-600">
+                  <div v-if="feeRate > 0" class="flex justify-between">
                     <span class="font-medium text-gray-700 dark:text-gray-300">{{ t('payment.actualPay') }}</span>
                     <span class="text-lg font-bold text-primary-600 dark:text-primary-400">{{ formatSelectedPaymentAmount(subTotalAmount) }}</span>
                   </div>
+                  <p v-if="selectedCurrency === DEFAULT_PAYMENT_CURRENCY && paymentUsdToCnyRate > 0" class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ t('payment.usdToCnySettlementHint', { rate: paymentUsdToCnyRateLabel }) }}
+                  </p>
                 </div>
               </div>
               <button :class="['btn w-full py-3 text-base font-medium', paymentButtonClass]" :disabled="!canSubmitSubscription || submitting" @click="confirmSubscribe">
@@ -519,42 +570,26 @@ const balanceRechargeMultiplier = computed(() => {
   const multiplier = checkout.value.balance_recharge_multiplier
   return Number.isFinite(multiplier) && multiplier > 0 ? multiplier : 1
 })
-// 订阅 CNY 换算汇率（1 USD = X CNY）。0 = 未配置，订阅保持 price 直付（与后端 opt-in 条件严格镜像）。
-const subscriptionUsdToCnyRate = computed(() => {
+const balanceRechargeMultiplierLabel = computed(() =>
+  balanceRechargeMultiplier.value.toFixed(2).replace(/\.?0+$/, ''),
+)
+// 历史 API 字段名保留兼容；现在用于所有 CNY 通道的 USD 支付换算。
+const paymentUsdToCnyRate = computed(() => {
   const rate = checkout.value.subscription_usd_to_cny_rate
   return Number.isFinite(rate) && rate > 0 ? rate : 0
 })
+const paymentUsdToCnyRateLabel = computed(() =>
+  paymentUsdToCnyRate.value.toFixed(4).replace(/\.?0+$/, ''),
+)
 const creditedAmount = computed(() => Math.round((validAmount.value * balanceRechargeMultiplier.value) * 100) / 100)
+const rechargeBonusAmount = computed(() => Math.max(0, Math.round((creditedAmount.value - validAmount.value) * 100) / 100))
+const feeRate = computed(() => checkout.value?.recharge_fee_rate ?? 0)
 
 // Adaptive grid: center single card, 2-col for 2 plans, 3-col for 3+
 const planGridClass = computed(() => {
   const n = checkout.value.plans.length
   if (n <= 2) return 'grid grid-cols-1 gap-5 sm:grid-cols-2'
   return 'grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'
-})
-
-// Check if an amount fits a method's [min, max]. 0 = no limit.
-function amountFitsMethod(amt: number, methodType: string): boolean {
-  if (amt <= 0) return true
-  const ml = visibleMethods.value[methodType]
-  if (!ml) return false
-  if (ml.single_min > 0 && amt < ml.single_min) return false
-  if (ml.single_max > 0 && amt > ml.single_max) return false
-  return true
-}
-
-// Visible methods decide the amount range shown to users.
-const globalMinAmount = computed(() => {
-  const limits = Object.values(visibleMethods.value)
-  if (limits.length === 0) return 0
-  if (limits.some(limit => limit.single_min <= 0)) return 0
-  return Math.min(...limits.map(limit => limit.single_min))
-})
-const globalMaxAmount = computed(() => {
-  const limits = Object.values(visibleMethods.value)
-  if (limits.length === 0) return 0
-  if (limits.some(limit => limit.single_max <= 0)) return 0
-  return Math.max(...limits.map(limit => limit.single_max))
 })
 
 // Selected method's limits (for validation and error messages)
@@ -592,19 +627,78 @@ function ceilPaymentAmount(value: number, currency: string): number {
   return Math.ceil(value * factor) / factor
 }
 
-function subscriptionPaymentAmountForCurrency(value: number, currency: string): number {
-  const rate = subscriptionUsdToCnyRate.value
-  if (rate <= 0 || currency !== DEFAULT_PAYMENT_CURRENCY) return roundPaymentAmount(value, currency)
-  return roundPaymentAmount(value * rate, currency)
+function gatewayBaseAmountForCurrency(valueUSD: number, currency: string): number {
+  const rate = paymentUsdToCnyRate.value
+  const value = rate > 0 && currency === DEFAULT_PAYMENT_CURRENCY
+    ? valueUSD * rate
+    : valueUSD
+  return roundPaymentAmount(value, currency)
+}
+
+function gatewayFeeAmountForCurrency(valueUSD: number, currency: string): number {
+  const baseAmount = gatewayBaseAmountForCurrency(valueUSD, currency)
+  if (feeRate.value <= 0 || baseAmount <= 0) return 0
+  return ceilPaymentAmount((baseAmount * feeRate.value) / 100, currency)
+}
+
+function gatewayTotalAmountForCurrency(valueUSD: number, currency: string): number {
+  const baseAmount = gatewayBaseAmountForCurrency(valueUSD, currency)
+  return roundPaymentAmount(baseAmount + gatewayFeeAmountForCurrency(valueUSD, currency), currency)
+}
+
+function gatewayLimitToUSDAmount(limit: number, currency: string, direction: 'min' | 'max'): number {
+  if (!Number.isFinite(limit) || limit <= 0) return 0
+  let value = limit
+  if (feeRate.value > 0) value /= 1 + (feeRate.value / 100)
+  const rate = paymentUsdToCnyRate.value
+  if (rate > 0 && currency === DEFAULT_PAYMENT_CURRENCY) value /= rate
+  const factor = 100
+  return direction === 'min'
+    ? Math.ceil((value * factor) - Number.EPSILON) / factor
+    : Math.floor((value * factor) + Number.EPSILON) / factor
 }
 
 function formatSelectedPaymentAmount(value: number): string {
   return formatPaymentAmount(value, selectedCurrency.value, localeCode.value)
 }
 
-function formatSelectedSubscriptionPaymentAmount(value: number): string {
-  return formatSelectedPaymentAmount(subscriptionPaymentAmountForCurrency(value, selectedCurrency.value))
+function formatUSDAmount(value: number): string {
+  return formatPaymentAmount(value, 'USD', localeCode.value)
 }
+
+function methodInputLimitUSD(methodType: string, direction: 'min' | 'max'): number {
+  const ml = visibleMethods.value[methodType]
+  if (!ml) return 0
+  const currency = normalizePaymentCurrency(ml.currency)
+  const limit = direction === 'min' ? ml.single_min : ml.single_max
+  return gatewayLimitToUSDAmount(limit, currency, direction)
+}
+
+// 通道限额以网关币种配置；用户输入始终是 USD，因此校验前先换算实际支付金额。
+function amountFitsMethod(amountUSD: number, methodType: string): boolean {
+  if (amountUSD <= 0) return true
+  const ml = visibleMethods.value[methodType]
+  if (!ml) return false
+  const currency = normalizePaymentCurrency(ml.currency)
+  const gatewayAmount = gatewayTotalAmountForCurrency(amountUSD, currency)
+  if (ml.single_min > 0 && gatewayAmount < ml.single_min) return false
+  if (ml.single_max > 0 && gatewayAmount > ml.single_max) return false
+  return true
+}
+
+// 将各网关限额反算为 USD，供统一的充值输入框使用。
+const globalMinAmount = computed(() => {
+  const methods = enabledMethods.value
+  if (methods.length === 0) return 0
+  if (methods.some(type => (visibleMethods.value[type]?.single_min ?? 0) <= 0)) return 0
+  return Math.min(...methods.map(type => methodInputLimitUSD(type, 'min')))
+})
+const globalMaxAmount = computed(() => {
+  const methods = enabledMethods.value
+  if (methods.length === 0) return 0
+  if (methods.some(type => (visibleMethods.value[type]?.single_max ?? 0) <= 0)) return 0
+  return Math.max(...methods.map(type => methodInputLimitUSD(type, 'max')))
+})
 
 const methodOptions = computed<PaymentMethodOption[]>(() =>
   enabledMethods.value.map((type) => {
@@ -618,16 +712,14 @@ const methodOptions = computed<PaymentMethodOption[]>(() =>
   })
 )
 
-const feeRate = computed(() => checkout.value?.recharge_fee_rate ?? 0)
-const feeAmount = computed(() =>
-  feeRate.value > 0 && validAmount.value > 0
-    ? Math.ceil(((validAmount.value * feeRate.value) / 100) * 100) / 100
-    : 0
+const rechargeGatewayBaseAmount = computed(() =>
+  gatewayBaseAmountForCurrency(validAmount.value, selectedCurrency.value),
 )
-const totalAmount = computed(() =>
-  feeRate.value > 0 && validAmount.value > 0
-    ? Math.round((validAmount.value + feeAmount.value) * 100) / 100
-    : validAmount.value
+const rechargeGatewayFeeAmount = computed(() =>
+  gatewayFeeAmountForCurrency(validAmount.value, selectedCurrency.value),
+)
+const rechargeGatewayTotalAmount = computed(() =>
+  gatewayTotalAmountForCurrency(validAmount.value, selectedCurrency.value),
 )
 
 const amountError = computed(() => {
@@ -639,8 +731,12 @@ const amountError = computed(() => {
   // Selected method can't handle this amount (but others can)
   const ml = selectedLimit.value
   if (ml) {
-    if (ml.single_min > 0 && validAmount.value < ml.single_min) return t('payment.amountTooLow', { min: formatSelectedPaymentAmount(ml.single_min) })
-    if (ml.single_max > 0 && validAmount.value > ml.single_max) return t('payment.amountTooHigh', { max: formatSelectedPaymentAmount(ml.single_max) })
+    if (ml.single_min > 0 && rechargeGatewayTotalAmount.value < ml.single_min) {
+      return t('payment.amountTooLow', { min: formatUSDAmount(methodInputLimitUSD(selectedMethod.value, 'min')) })
+    }
+    if (ml.single_max > 0 && rechargeGatewayTotalAmount.value > ml.single_max) {
+      return t('payment.amountTooHigh', { max: formatUSDAmount(methodInputLimitUSD(selectedMethod.value, 'max')) })
+    }
   }
   return ''
 })
@@ -653,44 +749,36 @@ const canSubmit = computed(() =>
 
 const subPaymentAmount = computed(() => {
   const price = selectedPlan.value?.price ?? 0
-  return subscriptionPaymentAmountForCurrency(price, selectedCurrency.value)
+  return gatewayBaseAmountForCurrency(price, selectedCurrency.value)
 })
 
 const subFeeAmount = computed(() => {
-  if (feeRate.value <= 0 || subPaymentAmount.value <= 0) return 0
-  return ceilPaymentAmount((subPaymentAmount.value * feeRate.value) / 100, selectedCurrency.value)
+  const price = selectedPlan.value?.price ?? 0
+  return gatewayFeeAmountForCurrency(price, selectedCurrency.value)
 })
 
 const subTotalAmount = computed(() => {
-  if (feeRate.value <= 0 || subPaymentAmount.value <= 0) return subPaymentAmount.value
-  return roundPaymentAmount(subPaymentAmount.value + subFeeAmount.value, selectedCurrency.value)
+  const price = selectedPlan.value?.price ?? 0
+  return gatewayTotalAmountForCurrency(price, selectedCurrency.value)
 })
-
-function subscriptionTotalAmountForCurrency(value: number, currency: string): number {
-  const paymentAmount = subscriptionPaymentAmountForCurrency(value, currency)
-  if (feeRate.value <= 0 || paymentAmount <= 0) return paymentAmount
-  const fee = ceilPaymentAmount((paymentAmount * feeRate.value) / 100, currency)
-  return roundPaymentAmount(paymentAmount + fee, currency)
-}
 
 // Subscription-specific: method options based on gateway pay amount
 const subMethodOptions = computed<PaymentMethodOption[]>(() => {
   const price = selectedPlan.value?.price ?? 0
   return enabledMethods.value.map((type) => {
     const ml = visibleMethods.value[type]
-    const currency = normalizePaymentCurrency(ml?.currency)
     return {
       type,
       display_name: ml?.display_name,
       fee_rate: ml?.fee_rate ?? 0,
-      available: ml?.available !== false && amountFitsMethod(subscriptionTotalAmountForCurrency(price, currency), type),
+      available: ml?.available !== false && amountFitsMethod(price, type),
     }
   })
 })
 
 const canSubmitSubscription = computed(() =>
   selectedPlan.value !== null
-    && amountFitsMethod(subTotalAmount.value, selectedMethod.value)
+    && amountFitsMethod(selectedPlan.value.price, selectedMethod.value)
     && selectedLimit.value?.available !== false
 )
 
@@ -1158,3 +1246,27 @@ onMounted(async () => {
   subscriptionStore.fetchActiveSubscriptions().catch(() => {})
 })
 </script>
+
+<style scoped>
+/* Hallmark · genre: modern-minimal · macrostructure: Workbench · design-system: DESIGN.md · designed-as-app
+ * pre-emit critique: P5 H5 E5 S5 R5 V4 · enrichment: none · motion: state-only
+ */
+.purchase-workbench {
+  overflow-x: clip;
+}
+
+:global(html:has(.purchase-workbench)),
+:global(body:has(.purchase-workbench)) {
+  overflow-x: clip;
+}
+
+.purchase-workbench :deep(button) {
+  transition-property: background-color, border-color, color, box-shadow, opacity, transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .purchase-workbench :deep(*) {
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>

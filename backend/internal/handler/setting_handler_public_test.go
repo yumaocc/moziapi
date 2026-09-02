@@ -82,6 +82,31 @@ func TestSettingHandler_GetPublicSettings_ExposesForceEmailOnThirdPartySignup(t 
 	require.True(t, resp.Data.ForceEmailOnThirdPartySignup)
 }
 
+func TestSettingHandler_GetPublicSettings_ExposesBalanceRechargeMultiplier(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	repo := &settingHandlerPublicRepoStub{
+		values: map[string]string{
+			service.SettingBalanceRechargeMult: "3",
+		},
+	}
+	h := NewSettingHandler(service.NewSettingService(repo, &config.Config{}), "test-version")
+
+	recorder := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(recorder)
+	c.Request = httptest.NewRequest(http.MethodGet, "/api/v1/settings/public", nil)
+	h.GetPublicSettings(c)
+
+	require.Equal(t, http.StatusOK, recorder.Code)
+	var resp struct {
+		Data struct {
+			BalanceRechargeMultiplier float64 `json:"balance_recharge_multiplier"`
+		} `json:"data"`
+	}
+	require.NoError(t, json.Unmarshal(recorder.Body.Bytes(), &resp))
+	require.Equal(t, 3.0, resp.Data.BalanceRechargeMultiplier)
+}
+
 func TestSettingHandler_GetPublicSettings_ExposesTencentCaptchaConfiguration(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
@@ -154,4 +179,45 @@ func TestSettingHandler_GetPublicSettings_ExposesWeChatOAuthModeCapabilities(t *
 	require.True(t, resp.Data.WeChatOAuthEnabled)
 	require.True(t, resp.Data.WeChatOAuthOpenEnabled)
 	require.True(t, resp.Data.WeChatOAuthMPEnabled)
+}
+
+func TestSettingHandler_GetPublicModelPricing_UsesDynamicPricingService(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	pricingService := service.NewPricingService(&config.Config{}, nil)
+	h := NewSettingHandler(nil, "test-version")
+	h.SetPricingService(pricingService)
+
+	recorder := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(recorder)
+	c.Request = httptest.NewRequest(http.MethodGet, "/api/v1/settings/model-pricing", nil)
+
+	h.GetPublicModelPricing(c)
+
+	require.Equal(t, http.StatusOK, recorder.Code)
+
+	var resp struct {
+		Code int `json:"code"`
+		Data struct {
+			Currency      string `json:"currency"`
+			TokensPerUnit int    `json:"tokens_per_unit"`
+			Source        string `json:"source"`
+			Models        []struct {
+				ID                    string  `json:"id"`
+				InputPerMillion       float64 `json:"input_per_million"`
+				OutputPerMillion      float64 `json:"output_per_million"`
+				CachedInputPerMillion float64 `json:"cached_input_per_million"`
+			} `json:"models"`
+		} `json:"data"`
+	}
+	require.NoError(t, json.Unmarshal(recorder.Body.Bytes(), &resp))
+	require.Equal(t, 0, resp.Code)
+	require.Equal(t, "USD", resp.Data.Currency)
+	require.Equal(t, 1_000_000, resp.Data.TokensPerUnit)
+	require.Equal(t, "system_pricing_catalog", resp.Data.Source)
+	require.Len(t, resp.Data.Models, 5)
+	require.Equal(t, "gpt-5.6-sol", resp.Data.Models[0].ID)
+	require.InDelta(t, 5, resp.Data.Models[0].InputPerMillion, 1e-12)
+	require.InDelta(t, 30, resp.Data.Models[0].OutputPerMillion, 1e-12)
+	require.InDelta(t, 0.5, resp.Data.Models[0].CachedInputPerMillion, 1e-12)
 }

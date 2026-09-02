@@ -370,14 +370,14 @@ func TestFrontendServer_ServeIndexHTML(t *testing.T) {
 
 		// First request to populate cache and get ETag
 		w1 := httptest.NewRecorder()
-		req1 := httptest.NewRequest(http.MethodGet, "/", nil)
+		req1 := httptest.NewRequest(http.MethodGet, "/login", nil)
 		router.ServeHTTP(w1, req1)
 		etag := w1.Header().Get("ETag")
 		require.NotEmpty(t, etag)
 
 		// Second request with If-None-Match
 		w2 := httptest.NewRecorder()
-		req2 := httptest.NewRequest(http.MethodGet, "/", nil)
+		req2 := httptest.NewRequest(http.MethodGet, "/login", nil)
 		req2.Header.Set("If-None-Match", etag)
 		router.ServeHTTP(w2, req2)
 
@@ -510,6 +510,133 @@ func TestOverrideFilesNeverReceiveImmutableCacheHeaders(t *testing.T) {
 }
 
 func TestFrontendServer_Middleware(t *testing.T) {
+	t.Run("redirects_legacy_home_to_canonical_root", func(t *testing.T) {
+		provider := &mockSettingsProvider{settings: map[string]string{"site_name": "Test Site"}}
+		server, err := NewFrontendServer(provider)
+		require.NoError(t, err)
+
+		router := gin.New()
+		router.Use(server.Middleware())
+
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, "/home?from=legacy", nil)
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusPermanentRedirect, w.Code)
+		assert.Equal(t, "/", w.Header().Get("Location"))
+	})
+
+	t.Run("serves_route_specific_initial_metadata", func(t *testing.T) {
+		provider := &mockSettingsProvider{
+			settings: map[string]any{
+				"site_name":     "Test Site",
+				"site_subtitle": "A custom subtitle",
+				"site_logo":     "/brand.svg",
+			},
+		}
+		server, err := NewFrontendServer(provider)
+		require.NoError(t, err)
+
+		router := gin.New()
+		router.Use(func(c *gin.Context) {
+			c.Set(middleware.CSPNonceKey, "seo-nonce")
+			c.Next()
+		})
+		router.Use(server.Middleware())
+
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, "http://internal.test/docs?source=test", nil)
+		req.Host = "docs.example.com"
+		req.Header.Set("X-Forwarded-Proto", "https")
+		router.ServeHTTP(w, req)
+
+		body := w.Body.String()
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Empty(t, w.Header().Get("X-Robots-Tag"))
+		assert.Contains(t, body, "<title>GPT 与 OpenAI API 中文接入文档 - Test Site</title>")
+		assert.Contains(t, body, `name="keywords" content="`+docsKeywords+`"`)
+		assert.Contains(t, body, `name="robots" content="`+indexRobotsContent+`"`)
+		assert.Contains(t, body, `rel="canonical" href="https://docs.example.com/docs"`)
+		assert.Contains(t, body, `property="og:image" content="https://docs.example.com/brand.svg"`)
+		assert.NotContains(t, body, "source=test")
+	})
+
+	t.Run("marks_private_pages_noindex_in_html_and_header", func(t *testing.T) {
+		provider := &mockSettingsProvider{settings: map[string]string{"site_name": "Test Site"}}
+		server, err := NewFrontendServer(provider)
+		require.NoError(t, err)
+
+		router := gin.New()
+		router.Use(server.Middleware())
+
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, "/login", nil)
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Equal(t, noindexRobotsContent, w.Header().Get("X-Robots-Tag"))
+		assert.Contains(t, w.Body.String(), `name="robots" content="`+noindexRobotsContent+`"`)
+		assert.NotContains(t, w.Body.String(), `rel="canonical"`)
+	})
+
+	t.Run("serves_dynamic_robots_and_sitemap", func(t *testing.T) {
+		provider := &mockSettingsProvider{settings: map[string]any{"site_name": "Test Site"}}
+		server, err := NewFrontendServer(provider)
+		require.NoError(t, err)
+
+		router := gin.New()
+		router.Use(server.Middleware())
+
+		robotsWriter := httptest.NewRecorder()
+		robotsRequest := httptest.NewRequest(http.MethodGet, "http://internal.test/robots.txt", nil)
+		robotsRequest.Host = "api.example.com"
+		robotsRequest.Header.Set("X-Forwarded-Proto", "https")
+		router.ServeHTTP(robotsWriter, robotsRequest)
+
+		assert.Equal(t, http.StatusOK, robotsWriter.Code)
+		assert.Contains(t, robotsWriter.Header().Get("Content-Type"), "text/plain")
+		assert.Contains(t, robotsWriter.Body.String(), "Disallow: /admin/")
+		assert.Contains(t, robotsWriter.Body.String(), "Sitemap: https://api.example.com/sitemap.xml")
+
+		sitemapWriter := httptest.NewRecorder()
+		sitemapRequest := httptest.NewRequest(http.MethodGet, "http://internal.test/sitemap.xml", nil)
+		sitemapRequest.Host = "api.example.com"
+		sitemapRequest.Header.Set("X-Forwarded-Proto", "https")
+		router.ServeHTTP(sitemapWriter, sitemapRequest)
+
+		assert.Equal(t, http.StatusOK, sitemapWriter.Code)
+		assert.Contains(t, sitemapWriter.Header().Get("Content-Type"), "application/xml")
+		assert.Contains(t, sitemapWriter.Body.String(), "<loc>https://api.example.com/</loc>")
+		assert.Contains(t, sitemapWriter.Body.String(), "<loc>https://api.example.com/docs</loc>")
+	})
+
+	t.Run("disables_indexing_and_sitemap_in_backend_mode", func(t *testing.T) {
+		provider := &mockSettingsProvider{
+			settings: map[string]any{
+				"site_name":            "Private Site",
+				"backend_mode_enabled": true,
+			},
+		}
+		server, err := NewFrontendServer(provider)
+		require.NoError(t, err)
+
+		router := gin.New()
+		router.Use(server.Middleware())
+
+		homeWriter := httptest.NewRecorder()
+		router.ServeHTTP(homeWriter, httptest.NewRequest(http.MethodGet, "/", nil))
+		assert.Equal(t, noindexRobotsContent, homeWriter.Header().Get("X-Robots-Tag"))
+		assert.Contains(t, homeWriter.Body.String(), `name="robots" content="`+noindexRobotsContent+`"`)
+
+		robotsWriter := httptest.NewRecorder()
+		router.ServeHTTP(robotsWriter, httptest.NewRequest(http.MethodGet, "/robots.txt", nil))
+		assert.Equal(t, "User-agent: *\nDisallow: /\n", robotsWriter.Body.String())
+
+		sitemapWriter := httptest.NewRecorder()
+		router.ServeHTTP(sitemapWriter, httptest.NewRequest(http.MethodGet, "/sitemap.xml", nil))
+		assert.NotContains(t, sitemapWriter.Body.String(), "<loc>")
+	})
+
 	t.Run("skips_api_routes", func(t *testing.T) {
 		provider := &mockSettingsProvider{
 			settings: map[string]string{"test": "value"},
@@ -619,10 +746,10 @@ func TestFrontendServer_Middleware(t *testing.T) {
 		router.Use(server.Middleware())
 
 		spaPaths := []string{
-			"/",
+			"/login",
 			"/dashboard",
-			"/users/123",
-			"/settings/profile",
+			"/legal/privacy",
+			"/admin/settings",
 		}
 
 		for _, path := range spaPaths {
@@ -635,6 +762,26 @@ func TestFrontendServer_Middleware(t *testing.T) {
 				assert.Contains(t, w.Header().Get("Content-Type"), "text/html")
 			})
 		}
+	})
+
+	t.Run("returns_real_404_for_unknown_spa_route", func(t *testing.T) {
+		provider := &mockSettingsProvider{
+			settings: map[string]string{"site_name": "Test Site"},
+		}
+
+		server, err := NewFrontendServer(provider)
+		require.NoError(t, err)
+
+		router := gin.New()
+		router.Use(server.Middleware())
+
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, "/users/123", nil)
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusNotFound, w.Code)
+		assert.Equal(t, noindexRobotsContent, w.Header().Get("X-Robots-Tag"))
+		assert.Contains(t, w.Body.String(), "<title>404 Not Found - Test Site</title>")
 	})
 
 	t.Run("serves_static_files", func(t *testing.T) {
@@ -650,11 +797,11 @@ func TestFrontendServer_Middleware(t *testing.T) {
 
 		// Request for existing static file
 		w := httptest.NewRecorder()
-		req := httptest.NewRequest(http.MethodGet, "/logo.png", nil)
+		req := httptest.NewRequest(http.MethodGet, "/logo.svg", nil)
 		router.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusOK, w.Code)
-		assert.Contains(t, w.Header().Get("Content-Type"), "image/png")
+		assert.Contains(t, w.Header().Get("Content-Type"), "image/svg+xml")
 		assert.Empty(t, w.Header().Get("Cache-Control"))
 
 		entries, err := fs.ReadDir(server.distFS, "assets")
@@ -735,11 +882,11 @@ func TestServeEmbeddedFrontend(t *testing.T) {
 		router.Use(middleware)
 
 		w := httptest.NewRecorder()
-		req := httptest.NewRequest(http.MethodGet, "/logo.png", nil)
+		req := httptest.NewRequest(http.MethodGet, "/logo.svg", nil)
 		router.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusOK, w.Code)
-		assert.Contains(t, w.Header().Get("Content-Type"), "image/png")
+		assert.Contains(t, w.Header().Get("Content-Type"), "image/svg+xml")
 	})
 
 	t.Run("serves_index_html_for_root", func(t *testing.T) {
@@ -763,7 +910,7 @@ func TestServeEmbeddedFrontend(t *testing.T) {
 		router := gin.New()
 		router.Use(middleware)
 
-		spaPaths := []string{"/dashboard", "/users/123", "/settings"}
+		spaPaths := []string{"/dashboard", "/admin/users", "/legal/privacy"}
 
 		for _, path := range spaPaths {
 			t.Run(path, func(t *testing.T) {

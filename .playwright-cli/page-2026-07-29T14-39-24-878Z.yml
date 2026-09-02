@@ -1,0 +1,374 @@
+- generic [ref=f1e3]:
+  - banner [ref=f1e4]:
+    - generic [ref=f1e5]:
+      - link "Sub2API 首页" [ref=f1e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f1e7]: S
+        - generic [ref=f1e8]: Sub2API
+      - navigation "主要导航" [ref=f1e9]:
+        - link "充值活动" [ref=f1e10] [cursor=pointer]:
+          - /url: "#recharge-event"
+        - link "产品优势" [ref=f1e11] [cursor=pointer]:
+          - /url: "#advantages"
+        - link "模型价格" [ref=f1e12] [cursor=pointer]:
+          - /url: "#pricing"
+        - link "接入文档" [ref=f1e13] [cursor=pointer]:
+          - /url: /docs
+      - link "登录 / 注册" [ref=f1e14] [cursor=pointer]:
+        - /url: /login
+  - main [ref=f1e15]:
+    - generic [ref=f1e17]:
+      - link "查看大模型调用倍率 0.1 和充值三倍到账活动" [ref=f1e18] [cursor=pointer]:
+        - /url: "#recharge-event"
+        - generic [ref=f1e19]: 限时活动
+        - strong [ref=f1e21]: 大模型调用倍率 0.1
+        - generic [ref=f1e23]: 充值三倍到账
+        - generic [ref=f1e24]: 查看活动 →
+      - generic [ref=f1e25]:
+        - generic [ref=f1e26]:
+          - generic [ref=f1e27]:
+            - generic [ref=f1e28]: OPENAI COMPATIBLE
+            - generic [ref=f1e30]: 中国大陆直连
+          - heading [level=1] [ref=f1e31]:
+            - text: GPT API 中转
+            - emphasis [ref=f1e32]: 更快、更稳、更省
+          - paragraph [ref=f1e33]: 国内直连的 GPT API 中转与 OpenAI 兼容接口，无需翻墙、无需信用卡；按量调用前沿大模型，每一笔 Token 消费都清晰可查。
+          - generic [ref=f1e34]:
+            - link "免费注册，领取 3 倍余额 →" [ref=f1e35] [cursor=pointer]:
+              - /url: /register
+              - text: 免费注册，领取 3 倍余额
+              - generic [ref=f1e36]: →
+            - link "查看模型价格 ↘" [ref=f1e37] [cursor=pointer]:
+              - /url: "#pricing"
+              - text: 查看模型价格
+              - generic [ref=f1e38]: ↘
+          - generic "产品核心优势" [ref=f1e39]:
+            - generic [ref=f1e40]:
+              - generic [ref=f1e41]: ↗
+              - paragraph [ref=f1e42]:
+                - strong [ref=f1e43]: 快速响应
+                - generic [ref=f1e44]: 优化直连链路
+            - generic [ref=f1e45]:
+              - generic [ref=f1e46]: ⌁
+              - paragraph [ref=f1e47]:
+                - strong [ref=f1e48]: 稳定可用
+                - generic [ref=f1e49]: 多上游智能调度
+            - generic [ref=f1e50]:
+              - generic [ref=f1e51]: $
+              - paragraph [ref=f1e52]:
+                - strong [ref=f1e53]: 按量计费
+                - generic [ref=f1e54]: 统一使用 USD
+            - generic [ref=f1e55]:
+              - generic [ref=f1e56]: ◎
+              - paragraph [ref=f1e57]:
+                - strong [ref=f1e58]: 消费透明
+                - generic [ref=f1e59]: Token 逐笔可查
+        - generic "Sub2API 当前优惠与服务能力" [ref=f1e60]:
+          - generic [ref=f1e61]:
+            - generic [ref=f1e62]: SUB2API / SAVINGS CONSOLE
+            - generic [ref=f1e64]: EVENT LIVE
+          - generic [ref=f1e65]:
+            - generic [ref=f1e66]:
+              - generic [ref=f1e67]: ALL MODELS · 活动价
+              - strong [ref=f1e68]: 0.1 倍率
+              - paragraph [ref=f1e69]: GPT · Codex · Responses API
+            - generic [ref=f1e70]: 全部模型
+          - generic [ref=f1e71]:
+            - generic [ref=f1e72]:
+              - generic [ref=f1e73]: RECHARGE BONUS
+              - strong [ref=f1e74]: 3× 到账
+            - generic [ref=f1e75]:
+              - generic [ref=f1e76]:
+                - generic [ref=f1e77]: 充值金额（USD）
+                - strong [ref=f1e78]: $100
+              - generic [ref=f1e79]: →
+              - generic [ref=f1e80]:
+                - generic [ref=f1e81]: 账户余额（USD）
+                - strong [ref=f1e82]: $300
+            - paragraph [ref=f1e83]:
+              - generic [ref=f1e84]: 活动到账比例
+              - strong [ref=f1e85]: $1 充值 = $3 余额
+          - generic [ref=f1e86]:
+            - generic [ref=f1e87]:
+              - generic [ref=f1e88]: DIRECT ACCESS
+              - strong [ref=f1e90]: 无需翻墙
+            - generic [ref=f1e91]:
+              - generic [ref=f1e92]: ROUTING
+              - strong [ref=f1e94]: 多路容灾
+            - generic [ref=f1e95]:
+              - generic [ref=f1e96]: BILLING
+              - strong [ref=f1e98]: 明细可查
+          - generic [ref=f1e99]:
+            - generic [ref=f1e100]: NO VPN · NO CREDIT CARD
+            - generic [ref=f1e101]: PAY AS YOU GO
+      - generic [ref=f1e102]:
+        - generic [ref=f1e103]: ✓ 无需信用卡
+        - generic [ref=f1e104]: ✓ 国内直连
+        - generic [ref=f1e105]: ✓ 按量计费
+        - generic [ref=f1e106]: ✓ Token 明细透明
+        - generic [ref=f1e107]: ✓ OpenAI 接口兼容
+    - region "支持的模型品牌" [ref=f1e108]:
+      - generic [ref=f1e109]:
+        - generic [ref=f1e110]: GPT-5.6
+        - generic [ref=f1e111]: GPT-5.5
+        - generic [ref=f1e112]: Codex
+        - generic [ref=f1e113]: Responses API
+        - generic [ref=f1e114]: OpenAI Compatible
+    - region [ref=f1e115]:
+      - generic [ref=f1e116]:
+        - generic [ref=f1e117]:
+          - generic [ref=f1e118]: LIMITED · 限时活动
+          - generic [ref=f1e119]: 3×
+          - paragraph [ref=f1e120]: 充值余额三倍到账
+        - generic [ref=f1e121]:
+          - text: RECHARGE BONUS
+          - heading [level=2] [ref=f1e122]:
+            - text: 同样的充值金额，
+            - emphasis [ref=f1e123]: 到账额度直接翻三倍。
+          - paragraph [ref=f1e124]:
+            - text: 活动期间美元充值额度按
+            - strong [ref=f1e125]: 1:3
+            - text: 到账：充值 $100，账户获得 $300 美元余额。三倍指到账余额，实际充值金额不变。
+          - generic "充值到账示例" [ref=f1e126]:
+            - generic [ref=f1e127]:
+              - generic [ref=f1e128]: 充值
+              - strong [ref=f1e129]: $1
+              - generic [ref=f1e130]: →
+              - generic [ref=f1e131]: 余额
+              - generic [ref=f1e132]: $3
+            - generic [ref=f1e133]:
+              - generic [ref=f1e134]: 充值
+              - strong [ref=f1e135]: $10
+              - generic [ref=f1e136]: →
+              - generic [ref=f1e137]: 余额
+              - generic [ref=f1e138]: $30
+            - generic [ref=f1e139]:
+              - generic [ref=f1e140]: 充值
+              - strong [ref=f1e141]: $100
+              - generic [ref=f1e142]: →
+              - generic [ref=f1e143]: 余额
+              - generic [ref=f1e144]: $300
+          - generic [ref=f1e145]:
+            - paragraph [ref=f1e146]: 活动结束后恢复常规比例，最终到账额度以充值页面实时显示为准。
+            - link "注册参与活动 →" [ref=f1e147] [cursor=pointer]:
+              - /url: /register
+              - text: 注册参与活动
+              - generic [ref=f1e148]: →
+    - generic [ref=f1e150]:
+      - generic [ref=f1e151]:
+        - generic [ref=f1e152]:
+          - text: WHY SUB2API
+          - heading "大模型接入，应该更简单。" [level=2] [ref=f1e153]
+        - paragraph [ref=f1e154]: 从接口稳定性到每一枚 Token 的消费记录，我们把复杂的上游管理留给系统，把清晰、快速的 API 留给你。
+      - generic [ref=f1e155]:
+        - article [ref=f1e156]:
+          - text: "01"
+          - heading "国内直连" [level=3] [ref=f1e157]
+          - paragraph [ref=f1e158]: 无需翻墙即可连接前沿模型，兼容主流 API 调用方式，替换 Base URL 即可迁移。
+        - article [ref=f1e159]:
+          - text: "02"
+          - heading "响应更快" [level=3] [ref=f1e160]
+          - paragraph [ref=f1e161]: 优化请求链路与节点调度，为流式对话和在线应用提供快速响应。
+        - article [ref=f1e162]:
+          - text: "03"
+          - heading "稳定可用" [level=3] [ref=f1e163]
+          - paragraph [ref=f1e164]: 多上游智能调度与故障切换，减少单一通道波动对业务的影响。
+        - article [ref=f1e165]:
+          - text: "04"
+          - heading "价格更低" [level=3] [ref=f1e166]
+          - paragraph [ref=f1e167]: 活动期间大模型调用倍率 0.1，让高频调用和批量任务的成本更低。
+        - article [ref=f1e168]:
+          - text: "05"
+          - heading "按量计费" [level=3] [ref=f1e169]
+          - paragraph [ref=f1e170]: 无需购买复杂套餐，用多少付多少，也无需信用卡即可开始使用。
+        - article [ref=f1e171]:
+          - text: "06"
+          - heading "消费透明" [level=3] [ref=f1e172]
+          - paragraph [ref=f1e173]: 输入、输出 Token、调用模型与对应费用逐笔可查，账单清晰可追溯。
+    - generic [ref=f1e175]:
+      - generic [ref=f1e177]:
+        - text: TRANSPARENT PRICING
+        - heading "GPT 模型，调用倍率 0.1。" [level=2] [ref=f1e178]
+      - generic [ref=f1e179]:
+        - generic [ref=f1e180]:
+          - generic [ref=f1e181]: GPT API PRICE
+          - generic [ref=f1e182]: 正在同步官方参考价
+          - generic [ref=f1e184]: 计价单位：USD / 1M Tokens（100 万 Tokens）
+        - table "GPT 模型价格对比" [ref=f1e185]:
+          - row "模型 输出 官方 / Sub2API 输入 官方 / Sub2API 缓存输入 官方 / Sub2API" [ref=f1e186]:
+            - generic [ref=f1e187]: 模型
+            - generic [ref=f1e188]:
+              - text: 输出
+              - generic [ref=f1e189]: 官方 / Sub2API
+            - generic [ref=f1e190]:
+              - text: 输入
+              - generic [ref=f1e191]: 官方 / Sub2API
+            - generic [ref=f1e192]:
+              - text: 缓存输入
+              - generic [ref=f1e193]: 官方 / Sub2API
+          - row "GPT-5.6 Sol 30$ / 3$ / 1M Tokens 5$ / 0.5$ / 1M Tokens 0.5$ / 0.05$ / 1M Tokens" [ref=f1e194]:
+            - strong [ref=f1e196]: GPT-5.6 Sol
+            - generic [ref=f1e197]:
+              - generic [ref=f1e198]: 30$
+              - generic [ref=f1e199]: /
+              - strong [ref=f1e200]: 3$
+              - generic [ref=f1e201]: / 1M Tokens
+            - generic [ref=f1e202]:
+              - generic [ref=f1e203]: 5$
+              - generic [ref=f1e204]: /
+              - strong [ref=f1e205]: 0.5$
+              - generic [ref=f1e206]: / 1M Tokens
+            - generic [ref=f1e207]:
+              - generic [ref=f1e208]: 0.5$
+              - generic [ref=f1e209]: /
+              - strong [ref=f1e210]: 0.05$
+              - generic [ref=f1e211]: / 1M Tokens
+          - row "GPT-5.6 Terra 15$ / 1.5$ / 1M Tokens 2.5$ / 0.25$ / 1M Tokens 0.25$ / 0.025$ / 1M Tokens" [ref=f1e212]:
+            - strong [ref=f1e214]: GPT-5.6 Terra
+            - generic [ref=f1e215]:
+              - generic [ref=f1e216]: 15$
+              - generic [ref=f1e217]: /
+              - strong [ref=f1e218]: 1.5$
+              - generic [ref=f1e219]: / 1M Tokens
+            - generic [ref=f1e220]:
+              - generic [ref=f1e221]: 2.5$
+              - generic [ref=f1e222]: /
+              - strong [ref=f1e223]: 0.25$
+              - generic [ref=f1e224]: / 1M Tokens
+            - generic [ref=f1e225]:
+              - generic [ref=f1e226]: 0.25$
+              - generic [ref=f1e227]: /
+              - strong [ref=f1e228]: 0.025$
+              - generic [ref=f1e229]: / 1M Tokens
+          - row "GPT-5.6 Luna 6$ / 0.6$ / 1M Tokens 1$ / 0.1$ / 1M Tokens 0.1$ / 0.01$ / 1M Tokens" [ref=f1e230]:
+            - strong [ref=f1e232]: GPT-5.6 Luna
+            - generic [ref=f1e233]:
+              - generic [ref=f1e234]: 6$
+              - generic [ref=f1e235]: /
+              - strong [ref=f1e236]: 0.6$
+              - generic [ref=f1e237]: / 1M Tokens
+            - generic [ref=f1e238]:
+              - generic [ref=f1e239]: 1$
+              - generic [ref=f1e240]: /
+              - strong [ref=f1e241]: 0.1$
+              - generic [ref=f1e242]: / 1M Tokens
+            - generic [ref=f1e243]:
+              - generic [ref=f1e244]: 0.1$
+              - generic [ref=f1e245]: /
+              - strong [ref=f1e246]: 0.01$
+              - generic [ref=f1e247]: / 1M Tokens
+          - row "GPT-5.5 30$ / 3$ / 1M Tokens 5$ / 0.5$ / 1M Tokens 0.5$ / 0.05$ / 1M Tokens" [ref=f1e248]:
+            - strong [ref=f1e250]: GPT-5.5
+            - generic [ref=f1e251]:
+              - generic [ref=f1e252]: 30$
+              - generic [ref=f1e253]: /
+              - strong [ref=f1e254]: 3$
+              - generic [ref=f1e255]: / 1M Tokens
+            - generic [ref=f1e256]:
+              - generic [ref=f1e257]: 5$
+              - generic [ref=f1e258]: /
+              - strong [ref=f1e259]: 0.5$
+              - generic [ref=f1e260]: / 1M Tokens
+            - generic [ref=f1e261]:
+              - generic [ref=f1e262]: 0.5$
+              - generic [ref=f1e263]: /
+              - strong [ref=f1e264]: 0.05$
+              - generic [ref=f1e265]: / 1M Tokens
+          - row "GPT-5.4 15$ / 1.5$ / 1M Tokens 2.5$ / 0.25$ / 1M Tokens 0.25$ / 0.025$ / 1M Tokens" [ref=f1e266]:
+            - strong [ref=f1e268]: GPT-5.4
+            - generic [ref=f1e269]:
+              - generic [ref=f1e270]: 15$
+              - generic [ref=f1e271]: /
+              - strong [ref=f1e272]: 1.5$
+              - generic [ref=f1e273]: / 1M Tokens
+            - generic [ref=f1e274]:
+              - generic [ref=f1e275]: 2.5$
+              - generic [ref=f1e276]: /
+              - strong [ref=f1e277]: 0.25$
+              - generic [ref=f1e278]: / 1M Tokens
+            - generic [ref=f1e279]:
+              - generic [ref=f1e280]: 0.25$
+              - generic [ref=f1e281]: /
+              - strong [ref=f1e282]: 0.025$
+              - generic [ref=f1e283]: / 1M Tokens
+        - paragraph [ref=f1e284]: 官方价动态同步；Sub2API 按 0.1 倍率计算。最终以控制台实时计费为准。
+      - generic [ref=f1e285]:
+        - generic [ref=f1e286]:
+          - strong [ref=f1e287]: PAYG
+          - generic [ref=f1e288]: 按量计费
+        - paragraph [ref=f1e289]: 充值即用，根据实际 Token 消耗结算，每笔费用清晰可查。
+        - link "立即注册 →" [ref=f1e290] [cursor=pointer]:
+          - /url: /register
+    - generic [ref=f1e292]:
+      - generic [ref=f1e293]:
+        - text: QUICK START
+        - heading "三步接入 Sub2API" [level=2] [ref=f1e294]
+        - paragraph [ref=f1e295]: 保留熟悉的调用方式，用几分钟完成大模型 API 迁移。
+      - generic [ref=f1e296]:
+        - article [ref=f1e297]:
+          - generic [ref=f1e298]: "1"
+          - heading "注册并创建密钥" [level=3] [ref=f1e299]
+          - paragraph [ref=f1e300]: 登录控制台，创建专属 API Key。
+        - article [ref=f1e301]:
+          - generic [ref=f1e302]: "2"
+          - heading "替换接口地址" [level=3] [ref=f1e303]
+          - paragraph [ref=f1e304]: 将客户端 Base URL 修改为 Sub2API 接口地址。
+        - article [ref=f1e305]:
+          - generic [ref=f1e306]: "3"
+          - heading "选择模型调用" [level=3] [ref=f1e307]
+          - paragraph [ref=f1e308]: 指定分组支持的 GPT 模型，实时查看 Token 与费用。
+    - generic [ref=f1e310]:
+      - generic [ref=f1e311]:
+        - text: REFERRAL REWARDS
+        - heading [level=2] [ref=f1e312]:
+          - text: 分享好用的 API，持续获得
+          - emphasis [ref=f1e313]: 10% 返利
+          - text: 。
+        - paragraph [ref=f1e314]: 邀请用户注册并使用 Sub2API，即可获得其消费金额 10% 的推广返利。让每一次推荐都有长期价值。
+        - link "登录查看推广计划 →" [ref=f1e315] [cursor=pointer]:
+          - /url: /login
+      - generic [ref=f1e316]:
+        - generic [ref=f1e319]:
+          - strong [ref=f1e320]: 10%
+          - generic [ref=f1e321]: 推广返利
+        - generic [ref=f1e322]: A
+        - generic [ref=f1e323]: B
+        - generic [ref=f1e324]: C
+    - generic [ref=f1e326]:
+      - generic [ref=f1e327]:
+        - text: FAQ
+        - heading "关于大模型 API 中转" [level=2] [ref=f1e328]
+        - paragraph [ref=f1e329]: 开始使用 Sub2API 前，你可能关心这些问题。
+      - generic [ref=f1e330]:
+        - group [ref=f1e331]:
+          - generic "Sub2API 是 GPT 中转站吗？ −" [ref=f1e332] [cursor=pointer]
+          - paragraph [ref=f1e333]: 是。Sub2API 提供 GPT 大模型 API 的统一中转接入，并提供兼容接口、用量明细与按量计费。
+        - group [ref=f1e334]:
+          - generic "支持哪些 API 调用方式？ +" [ref=f1e335] [cursor=pointer]
+        - group [ref=f1e336]:
+          - generic "Token 消耗如何查看？ +" [ref=f1e337] [cursor=pointer]
+        - group [ref=f1e338]:
+          - generic "Sub2API 如何计费？ +" [ref=f1e339] [cursor=pointer]
+    - generic [ref=f1e341]:
+      - text: START BUILDING
+      - heading "下一次模型调用，从 Sub2API 开始。" [level=2] [ref=f1e342]
+      - paragraph [ref=f1e343]: 立即注册，快速接入 GPT 大模型 API。
+      - link "立即注册 →" [ref=f1e344] [cursor=pointer]:
+        - /url: /register
+  - contentinfo [ref=f1e345]:
+    - generic [ref=f1e346]:
+      - generic [ref=f1e347]:
+        - generic [ref=f1e348]:
+          - generic [ref=f1e349]: S
+          - generic [ref=f1e350]: Sub2API
+        - paragraph [ref=f1e351]: 稳定、透明、易接入的大模型 API 中转服务。
+      - generic [ref=f1e352]:
+        - link "价格" [ref=f1e353] [cursor=pointer]:
+          - /url: "#pricing"
+        - link "接入文档" [ref=f1e354] [cursor=pointer]:
+          - /url: /docs
+        - link "控制台" [ref=f1e355] [cursor=pointer]:
+          - /url: /login
+    - generic [ref=f1e356]:
+      - generic [ref=f1e357]: © 2026 Sub2API
+      - generic [ref=f1e358]: 模型名称归其各自权利人所有

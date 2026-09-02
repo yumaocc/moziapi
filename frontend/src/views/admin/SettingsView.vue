@@ -7896,6 +7896,20 @@
                         t("admin.settings.payment.subscriptionUsdToCnyRateHint")
                       }}
                     </p>
+                    <p
+                      v-if="
+                        Number(form.payment_subscription_usd_to_cny_rate) > 0
+                      "
+                      class="mt-1 text-xs font-medium text-primary-600 dark:text-primary-400"
+                    >
+                      {{
+                        t("admin.settings.payment.usdToCnyPaymentPreview", {
+                          cny: Number(
+                            form.payment_subscription_usd_to_cny_rate,
+                          ).toFixed(2),
+                        })
+                      }}
+                    </p>
                   </div>
                   <div>
                     <label class="input-label">{{

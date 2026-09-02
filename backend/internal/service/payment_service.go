@@ -90,6 +90,7 @@ type CreateOrderRequest struct {
 type CreateOrderResponse struct {
 	OrderID                       int64                           `json:"order_id"`
 	Amount                        float64                         `json:"amount"`
+	RequestedAmount               float64                         `json:"requested_amount"`
 	PayAmount                     float64                         `json:"pay_amount"`
 	FeeRate                       float64                         `json:"fee_rate"`
 	Status                        string                          `json:"status"`

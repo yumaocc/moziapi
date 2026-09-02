@@ -11,13 +11,16 @@ import (
 )
 
 type paymentOrderProviderSnapshot struct {
-	SchemaVersion      int
-	ProviderInstanceID string
-	ProviderKey        string
-	PaymentMode        string
-	MerchantAppID      string
-	MerchantID         string
-	Currency           string
+	SchemaVersion             int
+	ProviderInstanceID        string
+	ProviderKey               string
+	PaymentMode               string
+	MerchantAppID             string
+	MerchantID                string
+	Currency                  string
+	RequestedAmountUSD        float64
+	USDToCNYRate              float64
+	BalanceRechargeMultiplier float64
 }
 
 func psOrderProviderSnapshot(order *dbent.PaymentOrder) *paymentOrderProviderSnapshot {
@@ -26,13 +29,16 @@ func psOrderProviderSnapshot(order *dbent.PaymentOrder) *paymentOrderProviderSna
 	}
 
 	snapshot := &paymentOrderProviderSnapshot{
-		SchemaVersion:      psSnapshotIntValue(order.ProviderSnapshot["schema_version"]),
-		ProviderInstanceID: psSnapshotStringValue(order.ProviderSnapshot["provider_instance_id"]),
-		ProviderKey:        psSnapshotStringValue(order.ProviderSnapshot["provider_key"]),
-		PaymentMode:        psSnapshotStringValue(order.ProviderSnapshot["payment_mode"]),
-		MerchantAppID:      psSnapshotStringValue(order.ProviderSnapshot["merchant_app_id"]),
-		MerchantID:         psSnapshotStringValue(order.ProviderSnapshot["merchant_id"]),
-		Currency:           psSnapshotStringValue(order.ProviderSnapshot["currency"]),
+		SchemaVersion:             psSnapshotIntValue(order.ProviderSnapshot["schema_version"]),
+		ProviderInstanceID:        psSnapshotStringValue(order.ProviderSnapshot["provider_instance_id"]),
+		ProviderKey:               psSnapshotStringValue(order.ProviderSnapshot["provider_key"]),
+		PaymentMode:               psSnapshotStringValue(order.ProviderSnapshot["payment_mode"]),
+		MerchantAppID:             psSnapshotStringValue(order.ProviderSnapshot["merchant_app_id"]),
+		MerchantID:                psSnapshotStringValue(order.ProviderSnapshot["merchant_id"]),
+		Currency:                  psSnapshotStringValue(order.ProviderSnapshot["currency"]),
+		RequestedAmountUSD:        psSnapshotFloatValue(order.ProviderSnapshot["requested_amount_usd"]),
+		USDToCNYRate:              psSnapshotFloatValue(order.ProviderSnapshot["usd_to_cny_rate"]),
+		BalanceRechargeMultiplier: psSnapshotFloatValue(order.ProviderSnapshot["balance_recharge_multiplier"]),
 	}
 	if snapshot.SchemaVersion == 0 &&
 		snapshot.ProviderInstanceID == "" &&
@@ -40,7 +46,10 @@ func psOrderProviderSnapshot(order *dbent.PaymentOrder) *paymentOrderProviderSna
 		snapshot.PaymentMode == "" &&
 		snapshot.MerchantAppID == "" &&
 		snapshot.MerchantID == "" &&
-		snapshot.Currency == "" {
+		snapshot.Currency == "" &&
+		snapshot.RequestedAmountUSD == 0 &&
+		snapshot.USDToCNYRate == 0 &&
+		snapshot.BalanceRechargeMultiplier == 0 {
 		return nil
 	}
 	return snapshot
@@ -74,6 +83,40 @@ func psSnapshotIntValue(value any) int {
 		}
 	}
 	return 0
+}
+
+func psSnapshotFloatValue(value any) float64 {
+	switch typed := value.(type) {
+	case int:
+		return float64(typed)
+	case int32:
+		return float64(typed)
+	case int64:
+		return float64(typed)
+	case float32:
+		return float64(typed)
+	case float64:
+		return typed
+	case string:
+		n, err := strconv.ParseFloat(strings.TrimSpace(typed), 64)
+		if err == nil {
+			return n
+		}
+	}
+	return 0
+}
+
+// PaymentOrderRequestedAmountUSD returns the USD amount selected by the user.
+// New orders persist it in the immutable order snapshot. Legacy orders fall
+// back to amount, which is already the closest USD-denominated value available.
+func PaymentOrderRequestedAmountUSD(order *dbent.PaymentOrder) float64 {
+	if order == nil {
+		return 0
+	}
+	if snapshot := psOrderProviderSnapshot(order); snapshot != nil && snapshot.RequestedAmountUSD > 0 {
+		return snapshot.RequestedAmountUSD
+	}
+	return order.Amount
 }
 
 func (s *PaymentService) resolveSnapshotOrderProviderInstance(ctx context.Context, order *dbent.PaymentOrder, snapshot *paymentOrderProviderSnapshot) (*dbent.PaymentProviderInstance, error) {

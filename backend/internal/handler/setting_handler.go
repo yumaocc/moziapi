@@ -16,6 +16,7 @@ import (
 // SettingHandler 公开设置处理器（无需认证）
 type SettingHandler struct {
 	settingService           *service.SettingService
+	pricingService           *service.PricingService
 	notificationEmailService *service.NotificationEmailService
 	version                  string
 }
@@ -32,6 +33,12 @@ func NewSettingHandler(settingService *service.SettingService, version string) *
 // changing the constructor signature used by existing tests.
 func (h *SettingHandler) SetNotificationEmailService(notificationEmailService *service.NotificationEmailService) {
 	h.notificationEmailService = notificationEmailService
+}
+
+// SetPricingService attaches the dynamic model pricing catalog used by the
+// anonymous homepage without changing the constructor used by existing tests.
+func (h *SettingHandler) SetPricingService(pricingService *service.PricingService) {
+	h.pricingService = pricingService
 }
 
 // GetPublicSettings 获取公开设置
@@ -95,6 +102,7 @@ func (h *SettingHandler) GetPublicSettings(c *gin.Context) {
 		GoogleOAuthEnabled:                  settings.GoogleOAuthEnabled,
 		BackendModeEnabled:                  settings.BackendModeEnabled,
 		PaymentEnabled:                      settings.PaymentEnabled,
+		BalanceRechargeMultiplier:           settings.BalanceRechargeMultiplier,
 		Version:                             h.version,
 		ServerTimezone:                      timezone.Name(),
 		ServerUTCOffset:                     timezone.UTCOffset(),

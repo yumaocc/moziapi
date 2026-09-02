@@ -34,6 +34,7 @@ export interface PaymentConfig {
   order_timeout_minutes: number
   balance_disabled: boolean
   balance_recharge_multiplier: number
+  /** Legacy field name; applies USD-to-CNY conversion to all CNY payment channels */
   subscription_usd_to_cny_rate: number
   enabled_payment_types: PaymentType[]
   help_image_url: string
@@ -68,7 +69,7 @@ export interface CheckoutInfoResponse {
   plans: SubscriptionPlan[]
   balance_disabled: boolean
   balance_recharge_multiplier: number
-  /** Subscription CNY conversion rate (1 USD = X CNY); 0 = disabled, plan price is charged as-is */
+  /** USD-to-CNY payment rate for all CNY channels (1 USD = X CNY); 0 = disabled */
   subscription_usd_to_cny_rate: number
   recharge_fee_rate: number
   help_text: string
@@ -86,6 +87,8 @@ export interface PaymentOrder {
   id: number
   user_id: number
   amount: number
+  /** USD amount selected by the user before promotional credit multiplier */
+  requested_amount?: number
   pay_amount: number
   currency?: string
   fee_rate: number
@@ -201,6 +204,7 @@ export interface WechatJSAPIPayload {
 export interface CreateOrderResult {
   order_id: number
   amount: number
+  requested_amount?: number
   pay_url?: string
   qr_code?: string
   client_secret?: string

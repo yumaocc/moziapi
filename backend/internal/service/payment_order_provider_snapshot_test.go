@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"testing"
 
+	dbent "github.com/Wei-Shaw/sub2api/ent"
 	"github.com/Wei-Shaw/sub2api/internal/payment"
 	"github.com/stretchr/testify/require"
 )
@@ -101,10 +102,13 @@ func TestCreateOrderInTx_WritesProviderSnapshot(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, strconv.FormatInt(instance.ID, 10), valueOrEmpty(order.ProviderInstanceID))
 	require.Equal(t, payment.TypeAlipay, valueOrEmpty(order.ProviderKey))
-	require.Equal(t, float64(2), order.ProviderSnapshot["schema_version"])
+	require.Equal(t, float64(3), order.ProviderSnapshot["schema_version"])
 	require.Equal(t, strconv.FormatInt(instance.ID, 10), order.ProviderSnapshot["provider_instance_id"])
 	require.Equal(t, payment.TypeAlipay, order.ProviderSnapshot["provider_key"])
 	require.Equal(t, "redirect", order.ProviderSnapshot["payment_mode"])
+	require.Equal(t, 88.0, order.ProviderSnapshot["requested_amount_usd"])
+	require.Equal(t, 1.0, order.ProviderSnapshot["balance_recharge_multiplier"])
+	require.Equal(t, 88.0, PaymentOrderRequestedAmountUSD(order))
 	require.NotContains(t, order.ProviderSnapshot, "config")
 	require.NotContains(t, order.ProviderSnapshot, "secretKey")
 	require.NotContains(t, order.ProviderSnapshot, "supported_types")
@@ -186,6 +190,52 @@ func TestBuildPaymentOrderProviderSnapshot_IncludesProviderCurrency(t *testing.T
 	}, CreateOrderRequest{})
 	require.Equal(t, "USD", airwallexSnapshot["currency"])
 	require.Equal(t, "acct-78", airwallexSnapshot["merchant_id"])
+}
+
+func TestPaymentOrderRequestedAmountUSDUsesSnapshotAndLegacyFallback(t *testing.T) {
+	t.Parallel()
+
+	order := &dbent.PaymentOrder{
+		Amount: 30,
+		ProviderSnapshot: map[string]any{
+			"schema_version":       3,
+			"requested_amount_usd": 10,
+		},
+	}
+	require.Equal(t, 10.0, PaymentOrderRequestedAmountUSD(order))
+
+	order.ProviderSnapshot = nil
+	require.Equal(t, 30.0, PaymentOrderRequestedAmountUSD(order))
+}
+
+func TestAddPaymentOrderPricingSnapshotFreezesUSDConversionAndPromotion(t *testing.T) {
+	t.Parallel()
+
+	snapshot := addPaymentOrderPricingSnapshot(
+		buildPaymentOrderProviderSnapshot(&payment.InstanceSelection{
+			InstanceID:  "88",
+			ProviderKey: payment.TypeWxpay,
+			Config: map[string]string{
+				"appId": "wx-app",
+			},
+		}, CreateOrderRequest{}),
+		CreateOrderRequest{OrderType: payment.OrderTypeBalance},
+		&PaymentConfig{
+			BalanceRechargeMultiplier: 3,
+			SubscriptionUSDToCNYRate:  7.2,
+		},
+		10,
+		&payment.InstanceSelection{
+			InstanceID:  "88",
+			ProviderKey: payment.TypeWxpay,
+			Config:      map[string]string{},
+		},
+	)
+
+	require.Equal(t, 3, snapshot["schema_version"])
+	require.Equal(t, 10.0, snapshot["requested_amount_usd"])
+	require.Equal(t, 3.0, snapshot["balance_recharge_multiplier"])
+	require.Equal(t, 7.2, snapshot["usd_to_cny_rate"])
 }
 
 func valueOrEmpty(v *string) string {

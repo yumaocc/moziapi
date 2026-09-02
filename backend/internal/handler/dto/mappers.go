@@ -123,6 +123,11 @@ func APIKeyFromService(k *service.APIKey) *APIKey {
 	return out
 }
 
+// APIKeyFromServiceUser returns the user-facing API key representation.
+func APIKeyFromServiceUser(k *service.APIKey) *APIKey {
+	return APIKeyFromService(k)
+}
+
 func GroupFromServiceShallow(g *service.Group) *Group {
 	if g == nil {
 		return nil
@@ -135,6 +140,11 @@ func GroupFromService(g *service.Group) *Group {
 	if g == nil {
 		return nil
 	}
+	return GroupFromServiceShallow(g)
+}
+
+// GroupFromServiceUser returns the public group representation.
+func GroupFromServiceUser(g *service.Group) *Group {
 	return GroupFromServiceShallow(g)
 }
 
@@ -659,7 +669,7 @@ func usageLogFromServiceUser(l *service.UsageLog) UsageLog {
 		CacheReadCost:             l.CacheReadCost,
 		TotalCost:                 l.TotalCost,
 		ActualCost:                l.ActualCost,
-		RateMultiplier:            l.RateMultiplier,
+		RateMultiplier:            1,
 		LongContextBillingApplied: l.LongContextBillingApplied,
 		BillingType:               l.BillingType,
 		RequestType:               requestType.String(),
@@ -708,6 +718,7 @@ func UsageLogFromServiceAdmin(l *service.UsageLog) *AdminUsageLog {
 		return nil
 	}
 	usageLog := usageLogFromServiceUser(l)
+	usageLog.RateMultiplier = l.RateMultiplier
 	usageLog.UpstreamEndpoint = l.UpstreamEndpoint
 	return &AdminUsageLog{
 		UsageLog:              usageLog,

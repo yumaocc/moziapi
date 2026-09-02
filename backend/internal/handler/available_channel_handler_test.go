@@ -42,6 +42,17 @@ func TestFilterUserVisibleGroups_IntersectionOnly(t *testing.T) {
 	require.ElementsMatch(t, []int64{1, 3}, ids)
 }
 
+func TestFilterUserVisibleGroups_MasksRateMultipliers(t *testing.T) {
+	groups := []service.AvailableGroupRef{{
+		ID: 1, RateMultiplier: 1.75, PeakRateMultiplier: 2.5,
+	}}
+
+	visible := filterUserVisibleGroups(groups, map[int64]struct{}{1: {}})
+	require.Len(t, visible, 1)
+	require.Equal(t, 1.0, visible[0].RateMultiplier)
+	require.Equal(t, 1.0, visible[0].PeakRateMultiplier)
+}
+
 func TestToUserSupportedModels_FiltersByAllowedPlatforms(t *testing.T) {
 	// 用户可访问分组只覆盖 anthropic；anthropic 平台的模型保留，openai 模型被剔除。
 	src := []service.SupportedModel{

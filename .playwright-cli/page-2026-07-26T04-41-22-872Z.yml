@@ -1,0 +1,151 @@
+- generic [ref=e307]:
+  - banner [ref=e308]:
+    - generic [ref=e309]:
+      - link "返回首页" [ref=e310] [cursor=pointer]:
+        - /url: /home
+        - generic [ref=e311]: M
+        - generic [ref=e312]: moziapi
+      - link "登录 / 注册" [ref=e318] [cursor=pointer]:
+        - /url: /login
+  - main [ref=e319]:
+    - generic [ref=e321]:
+      - generic [ref=e322]:
+        - text: MOZIAPI DOCS / QUICKSTART
+        - heading "接入文档" [level=1] [ref=e323]
+        - paragraph [ref=e324]: 使用一个 API Key 接入 OpenAI、Claude、Gemini 等模型。先在控制台创建密钥，再按密钥所属分组选择对应协议。
+        - generic [ref=e325]:
+          - link "注册并创建密钥 →" [ref=e326] [cursor=pointer]:
+            - /url: /register
+            - text: 注册并创建密钥
+            - generic [ref=e327]: →
+          - link "查看调用示例" [ref=e328] [cursor=pointer]:
+            - /url: "#http-api"
+      - generic [ref=e329]:
+        - generic [ref=e330]: API BASE URL
+        - strong [ref=e331]: https://api.mozihub.top/v1
+        - button "复制 API 地址" [ref=e332] [cursor=pointer]: ⧉
+    - generic [ref=e342]:
+      - generic [ref=e343]:
+        - text: 01 / GET STARTED
+        - heading "三步完成第一次调用" [level=2] [ref=e344]
+      - list [ref=e345]:
+        - listitem [ref=e346]:
+          - generic [ref=e347]: "1"
+          - generic [ref=e348]:
+            - heading "注册并充值" [level=3] [ref=e349]
+            - paragraph [ref=e350]: 注册账号并准备可用余额。所有调用按实际 Token 用量结算。
+        - listitem [ref=e351]:
+          - generic [ref=e352]: "2"
+          - generic [ref=e353]:
+            - heading "创建 API Key" [level=3] [ref=e354]
+            - paragraph [ref=e355]: 进入“API 密钥”，创建密钥并选择模型分组。密钥只会完整展示一次，请妥善保存。
+        - listitem [ref=e356]:
+          - generic [ref=e357]: "3"
+          - generic [ref=e358]:
+            - heading "选择对应协议" [level=3] [ref=e359]
+            - paragraph [ref=e360]: OpenAI 分组使用 Responses 或 Chat Completions；Claude 分组使用 Messages；Gemini 分组使用原生 v1beta。
+      - generic [ref=e361]:
+        - generic [ref=e362]:
+          - text: 02 / HTTP API
+          - heading "通用接口调用" [level=2] [ref=e363]
+          - paragraph [ref=e364]:
+            - text: 以下示例可直接在终端运行。将
+            - code [ref=e365]: sk-your-key
+            - text: 替换为控制台创建的密钥，并使用该分组实际支持的模型名称。
+        - tablist "接口协议" [ref=e366]:
+          - tab "OpenAI Responses" [ref=e367] [cursor=pointer]
+          - tab "Chat Completions" [active] [selected] [ref=e368] [cursor=pointer]
+          - tab "Claude Messages" [ref=e369] [cursor=pointer]
+          - tab "Gemini 原生" [ref=e370] [cursor=pointer]
+        - generic [ref=e371]:
+          - generic [ref=e372]:
+            - text: POST /v1/chat/completions
+            - button "复制代码" [ref=e373] [cursor=pointer]: ⧉ 复制
+          - code [ref=e375]: "curl https://api.mozihub.top/v1/chat/completions \\ -H \"Authorization: Bearer sk-your-key\" \\ -H \"Content-Type: application/json\" \\ -d '{\"model\":\"gpt-5.4\",\"messages\":[{\"role\":\"user\",\"content\":\"你好\"}],\"stream\":true}'"
+        - generic [ref=e376]:
+          - generic [ref=e377]:
+            - code [ref=e378]: https://api.mozihub.top/v1/responses
+            - generic [ref=e379]: Responses API
+            - generic [ref=e380]: OpenAI / Grok 分组
+          - generic [ref=e381]:
+            - code [ref=e382]: https://api.mozihub.top/v1/chat/completions
+            - generic [ref=e383]: Chat Completions
+            - generic [ref=e384]: 兼容客户端
+          - generic [ref=e385]:
+            - code [ref=e386]: https://api.mozihub.top/v1/messages
+            - generic [ref=e387]: Anthropic Messages
+            - generic [ref=e388]: Claude 协议
+          - generic [ref=e389]:
+            - code [ref=e390]: https://api.mozihub.top/v1beta
+            - generic [ref=e391]: Gemini API
+            - generic [ref=e392]: Gemini 原生协议
+          - generic [ref=e393]:
+            - code [ref=e394]: https://api.mozihub.top/v1/models
+            - generic [ref=e395]: 模型列表
+            - generic [ref=e396]: 查询当前可用模型
+      - generic [ref=e397]:
+        - generic [ref=e398]:
+          - text: 03 / CLIENTS
+          - heading "常用客户端配置" [level=2] [ref=e399]
+          - paragraph [ref=e400]: 配置完成后重启对应终端或客户端。模型名称可在控制台的密钥分组中确认。
+        - generic [ref=e401]:
+          - article [ref=e402] [cursor=pointer]:
+            - text: "01"
+            - heading "Codex CLI" [level=3] [ref=e403]
+            - paragraph [ref=e404]: 使用 Responses API 接入 OpenAI 分组。
+            - button "查看配置 →" [ref=e405]
+          - article [ref=e406] [cursor=pointer]:
+            - text: "02"
+            - heading "Claude Code" [level=3] [ref=e407]
+            - paragraph [ref=e408]: 使用 Anthropic Messages 协议接入。
+            - button "查看配置 →" [ref=e409]
+          - article [ref=e410] [cursor=pointer]:
+            - text: "03"
+            - heading "Gemini CLI" [level=3] [ref=e411]
+            - paragraph [ref=e412]: 使用 Gemini 原生 v1beta 协议接入。
+            - button "查看配置 →" [ref=e413]
+        - generic [ref=e414]:
+          - generic [ref=e415]:
+            - text: ~/.codex/config.toml + ~/.codex/auth.json
+            - button "复制代码" [ref=e416] [cursor=pointer]: ⧉ 复制
+          - code [ref=e418]: "# ~/.codex/config.toml model_provider = \"MoziAPI\" model = \"gpt-5.4\" [model_providers.MoziAPI] name = \"MoziAPI\" base_url = \"https://api.mozihub.top/v1\" wire_api = \"responses\" requires_openai_auth = true # ~/.codex/auth.json { \"OPENAI_API_KEY\": \"sk-your-key\" }"
+        - paragraph [ref=e419]:
+          - strong [ref=e420]: 更省事：
+          - text: 登录后进入“API 密钥”，点击某个密钥的“使用”按钮，系统会按密钥分组生成包含真实地址和密钥的 Codex、Claude Code、Gemini CLI 或 OpenCode 配置。
+      - generic [ref=e421]:
+        - generic [ref=e422]:
+          - text: 04 / ROUTING
+          - heading "模型与分组" [level=2] [ref=e423]
+        - generic [ref=e424]:
+          - generic [ref=e425]:
+            - strong [ref=e426]: 密钥分组决定路由
+            - paragraph [ref=e427]: 同一路径会根据 API Key 所属分组路由到相应上游。请勿用 Claude 分组的 Key 调用仅 OpenAI 分组支持的能力。
+          - generic [ref=e428]:
+            - strong [ref=e429]: 以控制台模型为准
+            - paragraph [ref=e430]: 可用模型和映射会随上游调整。调用前查看密钥分组的模型范围，不要仅依据示例中的模型名。
+          - generic [ref=e431]:
+            - strong [ref=e432]: 支持流式返回
+            - paragraph [ref=e433]: Responses、Chat Completions、Messages 和 Gemini generateContent 均可按对应协议开启流式输出。
+      - generic [ref=e434]:
+        - generic [ref=e435]:
+          - text: 05 / TROUBLESHOOTING
+          - heading "常见问题" [level=2] [ref=e436]
+        - group [ref=e437]:
+          - generic "401：密钥无效或未携带" [ref=e438] [cursor=pointer]
+          - paragraph [ref=e439]:
+            - text: 确认请求头使用
+            - code [ref=e440]: "Authorization: Bearer sk-..."
+            - text: 。Anthropic SDK/Claude Code 也可使用
+            - code [ref=e441]: ANTHROPIC_AUTH_TOKEN
+            - text: 。
+        - group [ref=e442]:
+          - generic "请求提示未分配分组" [ref=e443] [cursor=pointer]
+        - group [ref=e444]:
+          - generic "404 或模型不可用" [ref=e445] [cursor=pointer]
+        - group [ref=e446]:
+          - generic "在哪里查看消耗？" [ref=e447] [cursor=pointer]
+  - contentinfo [ref=e448]:
+    - generic [ref=e449]:
+      - generic [ref=e450]: © 2026 moziapi
+      - link "返回首页" [ref=e451] [cursor=pointer]:
+        - /url: /home

@@ -1,0 +1,420 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "返回首页" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e7]: S
+        - generic [ref=e8]: Sub2API
+      - navigation "文档导航" [ref=e9]:
+        - link "开始接入" [ref=e10] [cursor=pointer]:
+          - /url: "#start"
+        - link "CC Switch" [ref=e11] [cursor=pointer]:
+          - /url: "#cc-switch"
+        - link "HTTP API" [ref=e12] [cursor=pointer]:
+          - /url: "#http-api"
+        - link "异步生图" [ref=e13] [cursor=pointer]:
+          - /url: "#image-async"
+        - link "费用查询" [ref=e14] [cursor=pointer]:
+          - /url: "#usage"
+      - link "登录 / 注册" [ref=e15] [cursor=pointer]:
+        - /url: /login
+  - main [ref=e16]:
+    - generic [ref=e18]:
+      - generic [ref=e19]:
+        - text: SUB2API DOCS / QUICKSTART
+        - heading "GPT 与 OpenAI API 接入文档" [level=1] [ref=e20]
+        - paragraph [ref=e21]: 使用一个 API Key 接入 GPT、OpenAI Responses、Chat Completions 与 Codex。先在控制台创建密钥，再按密钥所属分组选择对应协议。
+        - generic [ref=e22]:
+          - link "注册并创建密钥 →" [ref=e23] [cursor=pointer]:
+            - /url: /register
+            - text: 注册并创建密钥
+            - generic [ref=e24]: →
+          - link "查看调用示例" [ref=e25] [cursor=pointer]:
+            - /url: "#http-api"
+      - generic [ref=e26]:
+        - generic [ref=e27]: API BASE URL
+        - strong [ref=e28]: https://api.mozihub.top/v1
+        - button "复制 API 地址" [ref=e29] [cursor=pointer]: ⧉
+    - generic [ref=e31]:
+      - complementary "本页目录" [ref=e32]:
+        - generic [ref=e33]: ON THIS PAGE
+        - link "开始接入" [ref=e34] [cursor=pointer]:
+          - /url: "#start"
+        - link "CC Switch（推荐）" [ref=e35] [cursor=pointer]:
+          - /url: "#cc-switch"
+        - link "HTTP API" [ref=e36] [cursor=pointer]:
+          - /url: "#http-api"
+        - link "GPT-Image-2 异步生图" [ref=e37] [cursor=pointer]:
+          - /url: "#image-async"
+        - link "模型与分组" [ref=e38] [cursor=pointer]:
+          - /url: "#models"
+        - link "消耗与费用" [ref=e39] [cursor=pointer]:
+          - /url: "#usage"
+      - generic [ref=e40]:
+        - generic [ref=e41]:
+          - text: 01 / GET STARTED
+          - heading "从注册到可用密钥" [level=2] [ref=e42]
+          - paragraph [ref=e43]: 按下面顺序操作，首次使用一般只需要几分钟。先充值再创建密钥，能避免首次调用因余额不足失败。
+        - list [ref=e44]:
+          - listitem [ref=e45]:
+            - generic [ref=e46]: "1"
+            - generic [ref=e47]:
+              - heading "注册并登录账户" [level=3] [ref=e48]
+              - paragraph [ref=e49]: 点击首页“登录 / 注册”，完成注册后进入控制台。控制台首页可查看当前余额、今日消费和 Token 用量。
+              - link "创建账户 →" [ref=e50] [cursor=pointer]:
+                - /url: /register
+          - listitem [ref=e51]:
+            - generic [ref=e52]: "2"
+            - generic [ref=e53]:
+              - heading "充值账户余额" [level=3] [ref=e54]
+              - paragraph [ref=e55]: 进入“充值/订阅”，保持在“充值”页签，输入充值金额并选择支付方式。提交前页面会明确展示支付金额和实际到账余额；支付完成后回到控制台确认余额更新。
+              - link "前往充值 →" [ref=e56] [cursor=pointer]:
+                - /url: /login
+          - listitem [ref=e57]:
+            - generic [ref=e58]: "3"
+            - generic [ref=e59]:
+              - heading "打开“API 密钥”并创建" [level=3] [ref=e60]
+              - paragraph [ref=e61]: 点击“创建密钥”，填写一个便于识别的名称，例如“CC Switch”。自定义密钥、IP 限制和速率限制都不是首次接入必填项。
+              - link "打开 API 密钥 →" [ref=e62] [cursor=pointer]:
+                - /url: /login
+          - listitem [ref=e63]:
+            - generic [ref=e64]: "4"
+            - generic [ref=e65]:
+              - heading "选择 OpenAI 分组" [level=3] [ref=e66]
+              - paragraph [ref=e67]: 这是最重要的一步：使用 GPT 或 Codex 时选择 OpenAI 分组。下拉项会显示价格倍率、订阅类型和分组说明；最终可调用的模型以分组说明与控制台可用模型为准。
+              - generic [ref=e68]: OpenAI GPT / Codex
+          - listitem [ref=e70]:
+            - generic [ref=e71]: "5"
+            - generic [ref=e72]:
+              - heading "设置额度并保存密钥" [level=3] [ref=e73]
+              - paragraph [ref=e74]:
+                - text: “额度限制”是这个 Key 最多可消费的美元金额，填写
+                - code [ref=e75]: "0"
+                - text: 表示不限制。创建后保存完整密钥，不要公开、截图或提交到代码仓库；后续可随时停用、改分组或限制额度。
+        - generic [ref=e76]:
+          - generic [ref=e77]:
+            - text: YOUR CREDENTIALS
+            - heading "Base URL 和 Key 在哪里？" [level=2] [ref=e78]
+          - generic [ref=e79]:
+            - generic [ref=e80]:
+              - text: Base URL
+              - paragraph [ref=e81]: 文档顶部“API BASE URL”显示的就是通用接口地址。也可以进入“API 密钥”，点击目标密钥的“使用”，系统生成的配置中会带上对应地址。
+            - code [ref=e82]: https://api.mozihub.top/v1
+            - button "复制 Base URL" [ref=e83] [cursor=pointer]: ⧉ 复制
+          - generic [ref=e84]:
+            - generic [ref=e85]:
+              - text: API Key
+              - paragraph [ref=e86]: 进入“API 密钥”页面。表格中的 Key 默认脱敏显示，点击 Key 右侧的复制图标会复制完整密钥；CC Switch 的“导入”按钮也会自动带入该密钥。
+            - code [ref=e87]: sk-••••••••••••
+            - link "前往复制 Key →" [ref=e88] [cursor=pointer]:
+              - /url: /login
+          - paragraph [ref=e89]: 不要把 API Key 发给他人或提交到公开仓库。怀疑泄露时，请立即在“API 密钥”页面停用或删除旧 Key，并创建新 Key。
+        - generic [ref=e90]:
+          - generic [ref=e91]: RECOMMENDED · 最快接入
+          - generic [ref=e92]:
+            - text: 02 / CC SWITCH
+            - heading "用 CC Switch 写入环境配置" [level=2] [ref=e93]
+            - paragraph [ref=e94]: 这是推荐方式，无需手动复制环境变量。系统会根据密钥分组生成 CC Switch 导入链接，带入服务地址、密钥、默认模型和余额查询配置。
+          - generic [ref=e95]:
+            - article [ref=e96]:
+              - generic [ref=e97]:
+                - generic [ref=e98]:
+                  - text: 配置管理工具
+                  - heading "CC Switch" [level=3] [ref=e99]
+                - generic [ref=e100]: "01"
+              - paragraph [ref=e101]: 先安装 CC Switch，再回到本站一键导入密钥。支持 Windows 10+、macOS 12+ 和主流 Linux 发行版。
+              - generic [ref=e102]:
+                - link "官方网站 ↗" [ref=e103] [cursor=pointer]:
+                  - /url: https://ccswitch.io
+                - link "各平台安装包 ↗" [ref=e104] [cursor=pointer]:
+                  - /url: https://github.com/farion1231/cc-switch/releases/latest
+              - generic [ref=e105]:
+                - generic [ref=e106]: macOS（Homebrew）
+                - code [ref=e107]: brew install --cask cc-switch
+                - button "复制 CC Switch 安装命令" [ref=e108] [cursor=pointer]: ⧉
+              - paragraph [ref=e109]:
+                - text: Windows 下载
+                - code [ref=e110]: .msi
+                - text: ，macOS 下载
+                - code [ref=e111]: .dmg
+                - text: ，Linux 按系统下载
+                - code [ref=e112]: .deb
+                - text: 、
+                - code [ref=e113]: .rpm
+                - text: 或
+                - code [ref=e114]: .AppImage
+                - text: 。
+            - article [ref=e115]:
+              - generic [ref=e116]:
+                - generic [ref=e117]:
+                  - text: AI 编程工具
+                  - heading "OpenAI Codex" [level=3] [ref=e118]
+                - generic [ref=e119]: "02"
+              - paragraph [ref=e120]: 安装 Codex CLI 后，再通过 CC Switch 切换到本站导入的 OpenAI 供应商。
+              - generic [ref=e121]:
+                - link "官方文档 ↗" [ref=e122] [cursor=pointer]:
+                  - /url: https://developers.openai.com/codex
+                - link "各平台安装包 ↗" [ref=e123] [cursor=pointer]:
+                  - /url: https://github.com/openai/codex/releases/latest
+              - generic [ref=e124]:
+                - generic [ref=e125]: macOS / Linux（官方脚本）
+                - code [ref=e126]: curl -fsSL https://chatgpt.com/codex/install.sh | sh
+                - button "复制 Codex macOS 和 Linux 安装命令" [ref=e127] [cursor=pointer]: ⧉
+              - generic [ref=e128]:
+                - generic [ref=e129]: Windows PowerShell
+                - code [ref=e130]: powershell -ExecutionPolicy ByPass -c "irm https://chatgpt.com/codex/install.ps1 | iex"
+                - button "复制 Codex Windows 安装命令" [ref=e131] [cursor=pointer]: ⧉
+              - group [ref=e132]:
+                - generic "其他安装方式" [ref=e133] [cursor=pointer]
+          - generic "CC Switch 导入步骤" [ref=e134]:
+            - generic [ref=e135]:
+              - generic [ref=e136]: "1"
+              - generic [ref=e137]: 进入控制台
+              - strong [ref=e138]: 打开“API 密钥”
+            - generic [ref=e139]: →
+            - generic [ref=e140]:
+              - generic [ref=e141]: "2"
+              - generic [ref=e142]: 找到目标密钥
+              - strong [ref=e143]: 点击“导入到 CC Switch”
+            - generic [ref=e144]: →
+            - generic [ref=e145]:
+              - generic [ref=e146]: "3"
+              - generic [ref=e147]: 浏览器唤起应用
+              - strong [ref=e148]: 确认导入并切换到该供应商
+          - generic [ref=e149]:
+            - link "登录后使用一键导入 →" [ref=e150] [cursor=pointer]:
+              - /url: /login
+              - text: 登录后使用一键导入
+              - generic [ref=e151]: →
+            - paragraph [ref=e152]:
+              - text: 尚未安装 CC Switch 时，请先安装应用并允许浏览器打开
+              - code [ref=e153]: ccswitch://
+              - text: 链接。导入后在 CC Switch 中选中该供应商并切换，配置才会生效。
+          - generic [ref=e155]:
+            - generic [ref=e156]: Codex 配置
+            - code [ref=e157]: base_url + wire_api
+            - code [ref=e158]: OPENAI_API_KEY
+          - paragraph [ref=e159]:
+            - text: CC Switch 会维护这些配置，无需在终端重复执行
+            - code [ref=e160]: export
+            - text: 。更换密钥或分组后，重新从“API 密钥”页面导入并在 CC Switch 中切换一次。
+        - generic [ref=e161]:
+          - generic [ref=e162]:
+            - text: 03 / HTTP API
+            - heading "通用接口调用" [level=2] [ref=e163]
+            - paragraph [ref=e164]:
+              - text: 以下示例可直接在终端运行。将
+              - code [ref=e165]: sk-your-key
+              - text: 替换为控制台创建的密钥，并使用该分组实际支持的模型名称。
+          - generic [ref=e166]:
+            - strong [ref=e167]: Chat Completions 客户端这样填
+            - paragraph [ref=e168]:
+              - text: API 格式选择“OpenAI Chat Completions”，自定义请求地址填写
+              - code [ref=e169]: https://api.mozihub.top/v1
+              - text: ，必须包含
+              - code [ref=e170]: /v1
+              - text: ，不要只填域名。客户端会自动拼接
+              - code [ref=e171]: /chat/completions
+              - text: ，最终请求地址是
+              - code [ref=e172]: https://api.mozihub.top/v1/chat/completions
+              - text: 。
+            - paragraph [ref=e173]:
+              - text: “模型 ID”必须填写小写标识，不能填写展示名称。推荐先用
+              - code [ref=e174]: gpt-5.5
+              - text: ；5.6 系列分别填写
+              - code [ref=e175]: gpt-5.6-sol
+              - text: 、
+              - code [ref=e176]: gpt-5.6-terra
+              - text: 或
+              - code [ref=e177]: gpt-5.6-luna
+              - text: 。最终可用范围取决于 Key 所选分组。
+          - generic [ref=e178]:
+            - generic [ref=e179]:
+              - generic [ref=e180]: 展示名称（给人看）
+              - strong [ref=e181]: GPT-5.6 Sol
+            - generic [ref=e182]: ≠
+            - generic [ref=e183]:
+              - generic [ref=e184]: 模型 ID（API 使用）
+              - strong [ref=e185]: gpt-5.6-sol
+            - paragraph [ref=e186]:
+              - text: 部分客户端允许手动添加模型，但不会把展示名称自动转换为模型 ID。它会把输入内容原样放进请求的
+              - code [ref=e187]: model
+              - text: 字段；后端则按模型 ID 匹配分组中的账号，因此大小写、空格或连字符不一致都会导致“该分组没有账号支持此模型”的 404。
+          - tablist "接口协议" [ref=e188]:
+            - tab "OpenAI Responses" [selected] [ref=e189] [cursor=pointer]
+            - tab "Chat Completions" [ref=e190] [cursor=pointer]
+          - generic [ref=e191]:
+            - generic [ref=e192]:
+              - generic [ref=e193]: POST /v1/responses
+              - button "复制代码" [ref=e194] [cursor=pointer]: ⧉ 复制
+            - code [ref=e196]: "curl https://api.mozihub.top/v1/responses \\ -H \"Authorization: Bearer sk-your-key\" \\ -H \"Content-Type: application/json\" \\ -d '{\"model\":\"gpt-5.4\",\"input\":\"用一句话解释 API 网关\"}'"
+          - generic [ref=e197]:
+            - generic [ref=e198]:
+              - code [ref=e199]: https://api.mozihub.top/v1/responses
+              - generic [ref=e200]: Responses API
+              - generic [ref=e201]: OpenAI 分组
+            - generic [ref=e202]:
+              - code [ref=e203]: https://api.mozihub.top/v1/chat/completions
+              - generic [ref=e204]: Chat Completions
+              - generic [ref=e205]: OpenAI 分组
+            - generic [ref=e206]:
+              - code [ref=e207]: https://api.mozihub.top/v1/models
+              - generic [ref=e208]: 模型列表
+              - generic [ref=e209]: 查询当前可用模型
+        - generic [ref=e210]:
+          - generic [ref=e211]:
+            - text: 04 / GPT-IMAGE-2 ASYNC
+            - heading "异步生成图片" [level=2] [ref=e212]
+            - paragraph [ref=e213]:
+              - code [ref=e214]: gpt-image-2
+              - text: 生图可能需要几十秒。异步接口会先返回任务 ID，再由客户端轮询结果，适合经过 CDN、Serverless 或有请求超时限制的应用。
+          - generic [ref=e215]:
+            - strong [ref=e216]: 使用前确认
+            - paragraph [ref=e217]:
+              - text: API Key 需要属于支持
+              - code [ref=e218]: gpt-image-2
+              - text: 且已开启图片生成权限的 OpenAI 分组。异步请求不支持
+              - code [ref=e219]: "stream: true"
+              - text: 。
+          - generic "异步生图调用流程" [ref=e220]:
+            - generic [ref=e221]:
+              - generic [ref=e222]: "1"
+              - generic [ref=e223]: 提交任务
+              - strong [ref=e224]: POST /images/generations/async
+            - generic [ref=e225]: →
+            - generic [ref=e226]:
+              - generic [ref=e227]: "2"
+              - generic [ref=e228]: 获得任务 ID
+              - strong [ref=e229]: 202 · processing
+            - generic [ref=e230]: →
+            - generic [ref=e231]:
+              - generic [ref=e232]: "3"
+              - generic [ref=e233]: 使用同一个 Key 轮询
+              - strong [ref=e234]: GET /images/tasks/:task_id
+          - generic [ref=e235]:
+            - generic [ref=e236]:
+              - generic [ref=e237]: STEP 1
+              - generic [ref=e238]:
+                - heading "提交生图任务" [level=3] [ref=e239]
+                - paragraph [ref=e240]:
+                  - text: 请求体与同步生图接口一致。成功后响应头包含
+                  - code [ref=e241]: Location
+                  - text: 和建议轮询间隔
+                  - code [ref=e242]: "Retry-After: 3"
+                  - text: 。
+            - generic [ref=e243]:
+              - generic [ref=e244]:
+                - generic [ref=e245]: POST /v1/images/generations/async
+                - button "复制代码" [ref=e246] [cursor=pointer]: ⧉ 复制
+              - code [ref=e248]: "curl -i https://api.mozihub.top/v1/images/generations/async \\ -H \"Authorization: Bearer sk-your-key\" \\ -H \"Content-Type: application/json\" \\ -d '{ \"model\": \"gpt-image-2\", \"prompt\": \"一只宇航员水獭漂浮在蓝色星云中，电影感光影\", \"size\": \"1024x1024\", \"quality\": \"high\", \"output_format\": \"png\" }'"
+            - generic [ref=e249]:
+              - generic [ref=e250]:
+                - generic [ref=e251]: 提交成功
+                - code [ref=e252]: 202 Accepted
+              - code [ref=e254]: "{ \"task_id\": \"imgtask_0123456789abcdef\", \"status\": \"processing\", \"poll_url\": \"/v1/images/tasks/imgtask_0123456789abcdef\", \"created_at\": 1784092800, \"expires_at\": 1784179200 }"
+          - generic [ref=e255]:
+            - generic [ref=e256]:
+              - generic [ref=e257]: STEP 2
+              - generic [ref=e258]:
+                - heading "轮询任务状态" [level=3] [ref=e259]
+                - paragraph [ref=e260]:
+                  - text: 必须使用提交任务时的同一个 API Key。建议按响应头提示每 3 秒查询一次，直到状态变为
+                  - code [ref=e261]: completed
+                  - text: 或
+                  - code [ref=e262]: failed
+                  - text: 。
+            - generic [ref=e263]:
+              - generic [ref=e264]:
+                - generic [ref=e265]: GET /v1/images/tasks/:task_id
+                - button "复制代码" [ref=e266] [cursor=pointer]: ⧉ 复制
+              - code [ref=e268]: "curl https://api.mozihub.top/v1/images/tasks/imgtask_0123456789abcdef \\ -H \"Authorization: Bearer sk-your-key\""
+            - generic [ref=e269]:
+              - article [ref=e270]:
+                - generic [ref=e271]:
+                  - generic [ref=e272]: 生成中
+                  - code [ref=e273]: processing
+                - code [ref=e275]: "{ \"task_id\": \"imgtask_0123456789abcdef\", \"status\": \"processing\", \"created_at\": 1784092800 }"
+              - article [ref=e276]:
+                - generic [ref=e277]:
+                  - generic [ref=e278]: 生成完成
+                  - code [ref=e279]: completed
+                - code [ref=e281]: "{ \"task_id\": \"imgtask_0123456789abcdef\", \"status\": \"completed\", \"http_status\": 200, \"image_url\": \"https://...\", \"result\": { \"data\": [{ \"url\": \"https://...\" }] } }"
+          - generic [ref=e282]:
+            - generic [ref=e283]:
+              - strong [ref=e284]: 获取图片
+              - paragraph [ref=e285]:
+                - text: 优先读取顶层
+                - code [ref=e286]: image_url
+                - text: ，也可以读取
+                - code [ref=e287]: result.data[0].url
+                - text: 。任务记录默认保留 24 小时，带签名的图片地址也可能过期，请及时保存。
+            - generic [ref=e288]:
+              - strong [ref=e289]: 失败处理
+              - paragraph [ref=e290]:
+                - code [ref=e291]: failed
+                - text: 状态会返回
+                - code [ref=e292]: http_status
+                - text: 和 OpenAI 兼容的
+                - code [ref=e293]: error
+                - text: 对象；不要继续无限轮询。
+            - generic [ref=e294]:
+              - strong [ref=e295]: 异步编辑
+              - paragraph [ref=e296]:
+                - text: 图片编辑可使用
+                - code [ref=e297]: POST /v1/images/edits/async
+                - text: ，请求格式与同步编辑接口一致，轮询地址不变。
+        - generic [ref=e298]:
+          - generic [ref=e299]:
+            - text: 05 / ROUTING
+            - heading "为什么必须选择分组" [level=2] [ref=e300]
+          - generic [ref=e301]:
+            - generic [ref=e302]:
+              - strong [ref=e303]: 密钥分组决定路由
+              - paragraph [ref=e304]: 请求会根据 API Key 所属分组路由到相应上游。调用 GPT 或 Codex 时请选择 OpenAI 分组。
+            - generic [ref=e305]:
+              - strong [ref=e306]: 以控制台模型为准
+              - paragraph [ref=e307]: 可用模型和映射会随上游调整。调用前查看密钥分组的模型范围，不要仅依据示例中的模型名。
+            - generic [ref=e308]:
+              - strong [ref=e309]: 支持流式返回
+              - paragraph [ref=e310]: Responses 和 Chat Completions 均可按对应协议开启流式输出。
+        - generic [ref=e311]:
+          - generic [ref=e312]:
+            - text: 06 / USAGE & COST
+            - heading "查看消耗和费用" [level=2] [ref=e313]
+            - paragraph [ref=e314]: 调用产生后进入“使用记录”。顶部统计卡展示总 Token 与总消费，图表展示模型、分组、接口和 Token 趋势；下方明细可以定位到每一次请求。
+          - generic [ref=e315]:
+            - generic [ref=e316]:
+              - text: 筛选请求
+              - paragraph [ref=e317]: 可按时间、API 密钥、模型、分组、请求类型和计费方式筛选。
+            - generic [ref=e318]:
+              - text: 核对费用
+              - paragraph [ref=e319]: 明细展示输入、输出、缓存 Token、单价和总费用，可用于核对余额变化。
+            - generic [ref=e320]:
+              - text: 排查失败
+              - paragraph [ref=e321]: 切换到错误记录，按密钥、模型、错误分类和状态码定位失败调用。
+          - link "查看使用记录 →" [ref=e322] [cursor=pointer]:
+            - /url: /login
+            - text: 查看使用记录
+            - generic [ref=e323]: →
+          - generic [ref=e324]:
+            - text: COMMON ISSUES
+            - heading "常见问题" [level=2] [ref=e325]
+          - group [ref=e326]:
+            - generic "401：密钥无效或未携带" [ref=e327] [cursor=pointer]
+            - paragraph [ref=e328]:
+              - text: 确认请求头使用
+              - code [ref=e329]: "Authorization: Bearer sk-..."
+              - text: ，并检查 Key 是否处于启用状态。
+          - group [ref=e330]:
+            - generic "请求提示未分配分组" [ref=e331] [cursor=pointer]
+          - group [ref=e332]:
+            - generic "404 或模型不可用" [ref=e333] [cursor=pointer]
+          - group [ref=e334]:
+            - generic "为什么加上 /v1 后，变成了模型 404？" [ref=e335] [cursor=pointer]
+          - group [ref=e336]:
+            - generic "在哪里查看消耗？" [ref=e337] [cursor=pointer]
+  - contentinfo [ref=e338]:
+    - generic [ref=e339]:
+      - generic [ref=e340]: © 2026 Sub2API
+      - link "返回首页" [ref=e341] [cursor=pointer]:
+        - /url: /

@@ -249,11 +249,11 @@ func filterUserVisibleGroups(
 			Name:               g.Name,
 			Platform:           g.Platform,
 			SubscriptionType:   g.SubscriptionType,
-			RateMultiplier:     g.RateMultiplier,
+			RateMultiplier:     1,
 			PeakRateEnabled:    g.PeakRateEnabled,
 			PeakStart:          g.PeakStart,
 			PeakEnd:            g.PeakEnd,
-			PeakRateMultiplier: g.PeakRateMultiplier,
+			PeakRateMultiplier: 1,
 			IsExclusive:        g.IsExclusive,
 		})
 	}

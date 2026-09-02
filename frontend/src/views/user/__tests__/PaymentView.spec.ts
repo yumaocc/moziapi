@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, shallowMount } from '@vue/test-utils'
 import PaymentView from '../PaymentView.vue'
+import AmountInput from '@/components/payment/AmountInput.vue'
 import { PAYMENT_RECOVERY_STORAGE_KEY } from '@/components/payment/paymentFlow'
 import { formatPaymentAmount } from '@/components/payment/currency'
 import SubscriptionPlanCard from '@/components/payment/SubscriptionPlanCard.vue'
+import zhMisc from '@/i18n/locales/zh/misc'
 import type { CheckoutInfoResponse, MethodLimit, SubscriptionPlan } from '@/types/payment'
 
 const routeState = vi.hoisted(() => ({
@@ -293,7 +295,7 @@ describe('PaymentView subscription plan grid', () => {
 })
 
 describe('PaymentView subscription confirmation amounts', () => {
-  it('shows converted CNY pay amount using the subscription rate, not the balance multiplier', async () => {
+  it('keeps the plan price in USD and shows the converted CNY gateway settlement', async () => {
     const wrapper = await mountSubscriptionConfirm({
       checkout: {
         balance_recharge_multiplier: 0.14,
@@ -309,12 +311,13 @@ describe('PaymentView subscription confirmation amounts', () => {
     })
 
     const text = wrapper.text()
+    const usdPrice = formatPaymentAmount(9.99, 'USD')
+    const usdOriginalPrice = formatPaymentAmount(12.99, 'USD')
     const convertedPrice = formatPaymentAmount(71.43, 'CNY')
-    const convertedOriginalPrice = formatPaymentAmount(92.88, 'CNY')
 
+    expect(text).toContain(usdPrice)
+    expect(text).toContain(usdOriginalPrice)
     expect(text).toContain(convertedPrice)
-    expect(text).toContain(convertedOriginalPrice)
-    expect(text).not.toContain(formatPaymentAmount(9.99, 'CNY'))
     // 换算必须使用订阅汇率（×7.15），而不是余额倍率（÷0.14 = 71.36）
     expect(text).not.toContain(formatPaymentAmount(71.36, 'CNY'))
     expect(wrapper.findAll('button').some(button => button.text().includes(convertedPrice))).toBe(true)
@@ -379,6 +382,77 @@ describe('PaymentView subscription confirmation amounts', () => {
     expect(text).toContain(fee)
     expect(text).toContain(total)
     expect(wrapper.findAll('button').some(button => button.text().includes(total))).toBe(true)
+  })
+})
+
+describe('PaymentView balance recharge amounts', () => {
+  beforeEach(() => {
+    vi.useRealTimers()
+    routeState.path = '/purchase'
+    routeState.query = {}
+    routerReplace.mockReset().mockResolvedValue(undefined)
+    routerPush.mockReset().mockResolvedValue(undefined)
+    routerResolve.mockClear()
+    createOrder.mockReset()
+    refreshUser.mockReset()
+    fetchActiveSubscriptions.mockReset().mockResolvedValue(undefined)
+    showError.mockReset()
+    showInfo.mockReset()
+    showWarning.mockReset()
+    bridgeInvoke.mockReset()
+    window.localStorage.clear()
+  })
+
+  it('uses USD input, converts CNY settlement, and applies the credit multiplier independently', async () => {
+    getCheckoutInfo.mockResolvedValue(checkoutInfoFixture({
+      balance_recharge_multiplier: 3,
+      subscription_usd_to_cny_rate: 7.2,
+      recharge_fee_rate: 2.5,
+      methods: {
+        wxpay: {
+          ...checkoutInfoFixture().data.methods.wxpay,
+          currency: 'CNY',
+          single_min: 72,
+          single_max: 720,
+        },
+      },
+    }))
+
+    const wrapper = shallowMount(PaymentView, {
+      global: {
+        stubs: {
+          AppLayout: {
+            template: '<div><slot /></div>',
+          },
+          Teleport: true,
+          Transition: false,
+        },
+      },
+    })
+    await flushPromises()
+    await flushPromises()
+
+    const input = wrapper.findComponent(AmountInput)
+    expect(input.props('currency')).toBe('USD')
+    expect(input.props('min')).toBe(9.76)
+    expect(input.props('max')).toBe(97.56)
+    expect(input.props('multiplier')).toBe(3)
+
+    input.vm.$emit('update:modelValue', 10)
+    await flushPromises()
+
+    const text = wrapper.text()
+    expect(text).toContain(formatPaymentAmount(10, 'USD'))
+    expect(text).toContain(formatPaymentAmount(30, 'USD'))
+    expect(text).toContain(formatPaymentAmount(20, 'USD'))
+    expect(text).toContain('payment.promotionalGift')
+    expect(text).toContain('到账余额 = 充值本金 + 活动赠送')
+    expect(text).toContain(formatPaymentAmount(72, 'CNY'))
+    expect(text).toContain(formatPaymentAmount(1.8, 'CNY'))
+    expect(text).toContain(formatPaymentAmount(73.8, 'CNY'))
+    expect(text).toContain('payment.gatewaySettlement')
+    expect(zhMisc.payment.gatewaySettlement).toBe('订单金额')
+    expect(wrapper.findAll('button').some(button => button.text().includes(formatPaymentAmount(73.8, 'CNY')))).toBe(true)
   })
 })
 

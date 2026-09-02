@@ -91,7 +91,6 @@ const props = withDefaults(defineProps<Props>(), {
   peakRateEnabled: false
 })
 
-// Whether user has a custom rate different from default
 const hasCustomRate = computed(() => {
   return (
     props.userRateMultiplier !== null &&

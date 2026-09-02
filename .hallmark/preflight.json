@@ -1,0 +1,9 @@
+{
+  "scanned_at": "2026-08-24",
+  "framework": "Vue 3 + Vite + Tailwind CSS 3",
+  "font_stack": "system sans + system mono",
+  "palette": "project teal/cyan primary scale with slate neutrals",
+  "motion": "motion-cut; Tailwind transitions only",
+  "spacing": "Tailwind default 4px scale",
+  "design_system": "DESIGN.md"
+}

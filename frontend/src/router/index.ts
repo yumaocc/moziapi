@@ -12,7 +12,7 @@ import { useNavigationLoadingState } from '@/composables/useNavigationLoading'
 import { useRoutePrefetch } from '@/composables/useRoutePrefetch'
 import { getSetupStatus } from '@/api/setup'
 import { resolveCompletedSetupRedirectPath } from './setupRedirect'
-import { resolveRouteDocumentTitle } from './title'
+import { applyRouteSeo } from './seo'
 
 /**
  * Route definitions with lazy loading
@@ -31,12 +31,54 @@ const routes: RouteRecordRaw[] = [
 
   // ==================== Public Routes ====================
   {
-    path: '/home',
+    path: '/',
     name: 'Home',
     component: () => import('@/views/HomeView.vue'),
     meta: {
       requiresAuth: false,
-      title: 'Home'
+      title: 'GPT API 中转与 OpenAI 国内直连',
+      seo: {
+        indexable: true,
+        description: '国内直连的 GPT API 与 OpenAI 兼容接口中转服务，支持 GPT、Codex 等大模型统一接入、按量计费、无需信用卡，并提供清晰的 Token 用量与费用明细。',
+        keywords: [
+          'GPT API 中转',
+          'OpenAI API 中转',
+          '大模型 API 中转',
+          'GPT 中转站',
+          '国内直连 API',
+          'OpenAI 兼容接口',
+          'AI API 按量计费',
+          '无需信用卡 API',
+        ],
+        canonicalPath: '/',
+      }
+    }
+  },
+  {
+    path: '/home',
+    redirect: '/',
+  },
+  {
+    path: '/docs',
+    name: 'ApiDocs',
+    component: () => import('@/views/ApiDocsView.vue'),
+    meta: {
+      requiresAuth: false,
+      title: 'GPT 与 OpenAI API 中文接入文档',
+      seo: {
+        indexable: true,
+        description: 'GPT 与 OpenAI API 中文接入教程，涵盖 API Key、Base URL、Responses API、Chat Completions、Codex、模型调用、流式输出与费用查询。',
+        keywords: [
+          'GPT API 接入教程',
+          'OpenAI API 中文文档',
+          'Responses API 文档',
+          'Chat Completions 接口',
+          'Codex API',
+          'API Key 教程',
+          '大模型 API 文档',
+        ],
+        canonicalPath: '/docs',
+      }
     }
   },
   {
@@ -187,10 +229,6 @@ const routes: RouteRecordRaw[] = [
   },
 
   // ==================== User Routes ====================
-  {
-    path: '/',
-    redirect: '/home'
-  },
   {
     path: '/dashboard',
     name: 'Dashboard',
@@ -790,14 +828,7 @@ router.beforeEach(async (to, _from, next) => {
     authInitialized = true
   }
 
-  // Set page title
   const appStore = useAppStore()
-  const adminSettingsStore = useAdminSettingsStore()
-  const customMenuItems = [
-    ...(appStore.cachedPublicSettings?.custom_menu_items ?? []),
-    ...(authStore.isAdmin ? adminSettingsStore.customMenuItems : []),
-  ]
-  document.title = resolveRouteDocumentTitle(to, appStore.siteName, customMenuItems)
 
   // Check if route requires authentication
   const requiresAuth = to.meta.requiresAuth !== false // Default to true
@@ -975,6 +1006,22 @@ router.beforeEach(async (to, _from, next) => {
 router.afterEach((to) => {
   // 结束导航加载状态
   navigationLoading.endNavigation()
+
+  const appStore = useAppStore()
+  const authStore = useAuthStore()
+  const adminSettingsStore = useAdminSettingsStore()
+  const customMenuItems = [
+    ...(appStore.cachedPublicSettings?.custom_menu_items ?? []),
+    ...(authStore.isAdmin ? adminSettingsStore.customMenuItems : []),
+  ]
+  applyRouteSeo(to, {
+    siteName: appStore.siteName,
+    siteDescription: appStore.cachedPublicSettings?.site_subtitle,
+    siteLogo: appStore.siteLogo,
+    customMenuItems,
+    basePath: import.meta.env.BASE_URL,
+    forceNoindex: appStore.backendModeEnabled,
+  })
 
   // 懒初始化预加载（首次导航时创建，传入 router 实例）
   if (!routePrefetch) {

@@ -1,0 +1,97 @@
+- generic [ref=f8e3]:
+  - complementary [ref=f8e4]:
+    - generic [ref=f8e5]:
+      - link [ref=f8e6] [cursor=pointer]:
+        - /url: /dashboard
+        - img "Logo" [ref=f8e7]
+      - generic [ref=f8e8]:
+        - link "moziapi" [ref=f8e9] [cursor=pointer]:
+          - /url: /dashboard
+        - generic [ref=f8e10]: v0.1.165
+    - navigation [ref=f8e11]:
+      - generic [ref=f8e12]:
+        - link "仪表盘" [ref=f8e13] [cursor=pointer]:
+          - /url: /dashboard
+        - link "API 密钥" [ref=f8e17] [cursor=pointer]:
+          - /url: /keys
+        - link "使用记录" [ref=f8e21] [cursor=pointer]:
+          - /url: /usage
+        - link "我的订阅" [ref=f8e25] [cursor=pointer]:
+          - /url: /subscriptions
+        - link "充值/订阅" [ref=f8e29] [cursor=pointer]:
+          - /url: /purchase
+        - link "我的订单" [ref=f8e37] [cursor=pointer]:
+          - /url: /orders
+        - link "兑换" [ref=f8e41] [cursor=pointer]:
+          - /url: /redeem
+        - link "邀请返利" [ref=f8e45] [cursor=pointer]:
+          - /url: /affiliate
+        - link "个人资料" [ref=f8e49] [cursor=pointer]:
+          - /url: /profile
+    - generic [ref=f8e53]:
+      - button "深色模式" [ref=f8e54] [cursor=pointer]
+      - button "收起" [ref=f8e58] [cursor=pointer]
+  - generic [ref=f8e62]:
+    - banner [ref=f8e63]:
+      - generic [ref=f8e64]:
+        - button "切换菜单" [ref=f8e66] [cursor=pointer]
+        - generic [ref=f8e69]:
+          - button "公告" [ref=f8e71] [cursor=pointer]
+          - button "🇨🇳" [ref=f8e75] [cursor=pointer]
+          - button "用户菜单" [ref=f8e80] [cursor=pointer]:
+            - generic [ref=f8e81]: DE
+    - main [ref=f8e83]:
+      - generic [ref=f8e84]:
+        - generic [ref=f8e85]:
+          - button "充值" [ref=f8e86] [cursor=pointer]
+          - button "订阅" [ref=f8e87] [cursor=pointer]
+        - generic [ref=f8e88]:
+          - paragraph [ref=f8e89]: 充值账户
+          - paragraph [ref=f8e90]: demo-user
+          - paragraph [ref=f8e91]: "当前余额: $42.50"
+        - generic [ref=f8e92]:
+          - generic [ref=f8e97]:
+            - generic [ref=f8e98]:
+              - paragraph [ref=f8e99]: 限时充值活动
+              - generic [ref=f8e100]: 到账倍率 ×3
+            - paragraph [ref=f8e101]:
+              - text: 当前支付通道以
+              - strong [ref=f8e102]: USD
+              - text: 计价。充值
+              - strong [ref=f8e103]: $10.00
+              - text: ，预计到账
+              - strong [ref=f8e104]: $30.00
+              - text: 。实际支付与到账金额以订单确认页为准。
+          - generic [ref=f8e105]:
+            - generic [ref=f8e106]:
+              - generic [ref=f8e107]: 快捷金额
+              - generic [ref=f8e108]:
+                - button "$10" [ref=f8e109] [cursor=pointer]
+                - button "$20" [ref=f8e110] [cursor=pointer]
+                - button "$50" [ref=f8e111] [cursor=pointer]
+                - button "$100" [active] [ref=f8e112] [cursor=pointer]
+                - button "$200" [ref=f8e113] [cursor=pointer]
+                - button "$500" [ref=f8e114] [cursor=pointer]
+                - button "$1000" [ref=f8e115] [cursor=pointer]
+                - button "$2000" [ref=f8e116] [cursor=pointer]
+                - button "$5000" [ref=f8e117] [cursor=pointer]
+            - generic [ref=f8e118]:
+              - generic [ref=f8e119]: 自定义金额
+              - generic [ref=f8e120]:
+                - generic [ref=f8e121]: $
+                - textbox "1 - 5000" [ref=f8e122]: "100"
+        - generic [ref=f8e124]:
+          - generic [ref=f8e125]: 支付方式
+          - button "信用卡 / Stripe 信用卡 / Stripe" [ref=f8e127] [cursor=pointer]:
+            - generic [ref=f8e128]:
+              - img "信用卡 / Stripe" [ref=f8e129]
+              - generic [ref=f8e130]: 信用卡 / Stripe
+        - generic [ref=f8e135]:
+          - generic [ref=f8e136]:
+            - generic [ref=f8e137]: 支付金额
+            - generic [ref=f8e138]: $100.00
+          - generic [ref=f8e139]:
+            - generic [ref=f8e140]: 到账余额
+            - generic [ref=f8e141]: $300.00
+          - paragraph [ref=f8e142]: 当前到账倍率：×3
+        - button "确认支付 $100.00" [ref=f8e143] [cursor=pointer]

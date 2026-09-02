@@ -44,7 +44,11 @@
               <span class="font-medium text-gray-900 dark:text-white">{{ order.out_trade_no }}</span>
             </div>
             <div v-if="hasAmountFields(order)" class="flex justify-between">
-              <span class="text-gray-500 dark:text-gray-400">{{ t('payment.orders.baseAmount') }}</span>
+              <span class="text-gray-500 dark:text-gray-400">{{ t('payment.orders.requestedAmount') }}</span>
+              <span class="font-medium text-gray-900 dark:text-white">{{ formatUSDAmount(requestedAmountUSD) }}</span>
+            </div>
+            <div v-if="hasAmountFields(order)" class="flex justify-between">
+              <span class="text-gray-500 dark:text-gray-400">{{ t('payment.gatewaySettlement') }}</span>
               <span class="font-medium text-gray-900 dark:text-white">{{ formatGatewayAmount(baseAmount) }}</span>
             </div>
             <div v-if="hasAmountFields(order) && order.fee_rate > 0" class="flex justify-between">
@@ -55,9 +59,9 @@
               <span class="text-gray-500 dark:text-gray-400">{{ t('payment.orders.payAmount') }}</span>
               <span class="font-bold text-primary-600 dark:text-primary-400">{{ formatGatewayAmount(order.pay_amount) }}</span>
             </div>
-            <div v-if="hasAmountFields(order) && order.amount !== order.pay_amount" class="flex justify-between">
+            <div v-if="hasAmountFields(order) && order.order_type === 'balance'" class="flex justify-between">
               <span class="text-gray-500 dark:text-gray-400">{{ t('payment.orders.creditedAmount') }}</span>
-              <span class="font-medium text-gray-900 dark:text-white">{{ order.order_type === 'balance' ? '$' + order.amount.toFixed(2) : formatGatewayAmount(order.amount) }}</span>
+              <span class="font-medium text-gray-900 dark:text-white">{{ formatUSDAmount(order.amount) }}</span>
             </div>
             <div v-if="hasPaymentType(order)" class="flex justify-between">
               <span class="text-gray-500 dark:text-gray-400">{{ t('payment.orders.paymentMethod') }}</span>
@@ -149,6 +153,12 @@ const baseAmount = computed(() => {
   return Math.round((order.value.pay_amount / (1 + feeRate / 100)) * 100) / 100
 })
 
+const requestedAmountUSD = computed(() => {
+  if (!hasAmountFields(order.value)) return 0
+  const requested = Number(order.value.requested_amount)
+  return Number.isFinite(requested) && requested > 0 ? requested : order.value.amount
+})
+
 /** 手续费 = pay_amount - baseAmount */
 const feeAmount = computed(() => {
   if (!hasAmountFields(order.value)) return 0
@@ -190,6 +200,10 @@ function normalizedOrderPaymentType(paymentType: string): string {
 
 function formatGatewayAmount(value: number): string {
   return formatPaymentAmount(value, currency.value, localeCode.value)
+}
+
+function formatUSDAmount(value: number): string {
+  return formatPaymentAmount(value, 'USD', localeCode.value)
 }
 
 function setResolvedOrder(nextOrder: ResolvedOrder | null): void {

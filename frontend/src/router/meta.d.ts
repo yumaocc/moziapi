@@ -5,6 +5,35 @@
 
 import 'vue-router'
 
+export interface RouteSeoMeta {
+  /**
+   * Whether search engines may index this route.
+   * Routes default to false and must opt in explicitly.
+   */
+  indexable: boolean
+
+  /**
+   * Page summary used by description, Open Graph, and Twitter metadata.
+   */
+  description: string
+
+  /**
+   * Concise search phrases that also describe visible page content.
+   */
+  keywords?: string[]
+
+  /**
+   * Canonical route pathname. Query strings and hashes are always removed.
+   */
+  canonicalPath?: string
+
+  /**
+   * Open Graph content type.
+   * @default website
+   */
+  type?: 'website' | 'article'
+}
+
 declare module 'vue-router' {
   interface RouteMeta {
     /**
@@ -64,5 +93,10 @@ declare module 'vue-router' {
      * i18n key for the page description
      */
     descriptionKey?: string
+
+    /**
+     * Search-engine metadata. Routes are noindex unless this explicitly opts in.
+     */
+    seo?: RouteSeoMeta
   }
 }

@@ -148,6 +148,7 @@ func TestVerifyOrderPublicReturnsLegacyOrderState(t *testing.T) {
 	for _, field := range []string{
 		"id",
 		"amount",
+		"requested_amount",
 		"pay_amount",
 		"fee_rate",
 		"currency",
@@ -243,6 +244,7 @@ func TestResolveOrderPublicByResumeTokenReturnsFrontendContractFields(t *testing
 	require.Equal(t, float64(order.ID), resp.Data["id"])
 	require.Equal(t, "resolve-order-no", resp.Data["out_trade_no"])
 	require.Equal(t, 100.0, resp.Data["amount"])
+	require.Equal(t, 100.0, resp.Data["requested_amount"])
 	require.Equal(t, 103.0, resp.Data["pay_amount"])
 	require.Equal(t, 0.03, resp.Data["fee_rate"])
 	require.Equal(t, "USD", resp.Data["currency"])

@@ -1,0 +1,321 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "MoziAPI 首页" [ref=e6] [cursor=pointer]:
+        - /url: /home
+        - generic [ref=e7]: M
+        - generic [ref=e8]: moziapi
+      - navigation "主要导航" [ref=e9]:
+        - link "充值活动" [ref=e10] [cursor=pointer]:
+          - /url: "#recharge-event"
+        - link "产品优势" [ref=e11] [cursor=pointer]:
+          - /url: "#advantages"
+        - link "模型价格" [ref=e12] [cursor=pointer]:
+          - /url: "#pricing"
+        - link "快速接入" [ref=e13] [cursor=pointer]:
+          - /url: "#quick-start"
+      - link "登录 / 注册" [ref=e14] [cursor=pointer]:
+        - /url: /login
+  - main [ref=e15]:
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e19]: 按量计费 · Token 明细透明
+        - heading [level=1] [ref=e21]:
+          - text: 一个接口，
+          - emphasis [ref=e22]: 连接前沿大模型。
+        - paragraph [ref=e23]: MoziAPI 是为开发者打造的 GPT、Claude 大模型 API 中转站。稳定接入、快速响应，模型价格低至官网约 1/10。
+        - generic [ref=e24]:
+          - link "立即注册 →" [ref=e25] [cursor=pointer]:
+            - /url: /register
+            - text: 立即注册
+            - generic [ref=e26]: →
+          - link "查看模型价格" [ref=e27] [cursor=pointer]:
+            - /url: "#pricing"
+        - generic [ref=e28]:
+          - generic [ref=e29]: ✓无需信用卡
+          - generic [ref=e30]: ✓按量计费
+          - generic [ref=e31]: ✓Token 明细透明
+      - generic "MoziAPI 接入代码示例" [ref=e32]:
+        - generic [ref=e33]: quickstart.sh
+        - generic [ref=e38]:
+          - paragraph [ref=e39]: $ curl https://api.mozihub.top/v1/responses \
+          - paragraph [ref=e40]:
+            - text: "-H"
+            - mark [ref=e41]: "\"Authorization: Bearer $MOZI_KEY\""
+            - text: \
+          - paragraph [ref=e42]:
+            - text: "-d"
+            - mark [ref=e43]: "'{\"model\":\"gpt-5.4\"}'"
+          - generic [ref=e44]:
+            - paragraph [ref=e45]:
+              - generic [ref=e46]: ✓
+              - text: route.connected
+              - generic [ref=e47]: 24ms
+            - paragraph [ref=e48]:
+              - generic [ref=e49]: ✓
+              - text: stream.started
+              - generic [ref=e50]: fast
+            - paragraph [ref=e51]:
+              - generic [ref=e52]: ✓
+              - text: usage.visible
+              - generic [ref=e53]: 100%
+        - generic [ref=e54]:
+          - generic [ref=e55]: ALL SYSTEMS OPERATIONAL
+          - generic [ref=e57]: MOZI / EDGE
+    - region "支持的模型品牌" [ref=e58]:
+      - generic [ref=e59]:
+        - generic [ref=e60]: GPT-5.6
+        - generic [ref=e61]: GPT-5.5
+        - generic [ref=e62]: Gemini
+        - generic [ref=e63]: Grok
+        - generic [ref=e64]: OpenAI Compatible
+    - region [ref=e65]:
+      - generic [ref=e66]:
+        - generic [ref=e67]:
+          - generic [ref=e68]: LIMITED · 限时活动
+          - generic [ref=e69]: 3×
+          - paragraph [ref=e70]: 充值余额三倍到账
+        - generic [ref=e71]:
+          - text: RECHARGE BONUS
+          - heading [level=2] [ref=e72]:
+            - text: 同样的充值金额，
+            - emphasis [ref=e73]: 到账额度直接翻三倍。
+          - paragraph [ref=e74]:
+            - text: 常规充值比例为 1 CNY = 0.15 USD，活动期间提升至
+            - strong [ref=e75]: 1 CNY = 0.45 USD
+            - text: 。三倍指相较常规比例的到账额度，人民币支付金额不变。
+          - generic "充值到账示例" [ref=e76]:
+            - generic [ref=e77]:
+              - generic [ref=e78]: 支付
+              - strong [ref=e79]: ¥1
+              - generic [ref=e80]: →
+              - generic [ref=e81]: 到账
+              - generic [ref=e82]: $0.45
+            - generic [ref=e83]:
+              - generic [ref=e84]: 支付
+              - strong [ref=e85]: ¥10
+              - generic [ref=e86]: →
+              - generic [ref=e87]: 到账
+              - generic [ref=e88]: $4.50
+            - generic [ref=e89]:
+              - generic [ref=e90]: 支付
+              - strong [ref=e91]: ¥100
+              - generic [ref=e92]: →
+              - generic [ref=e93]: 到账
+              - generic [ref=e94]: $45.00
+          - generic [ref=e95]:
+            - paragraph [ref=e96]: 活动结束后恢复常规比例，最终到账额度以充值页面实时显示为准。
+            - link "注册参与活动 →" [ref=e97] [cursor=pointer]:
+              - /url: /register
+              - text: 注册参与活动
+              - generic [ref=e98]: →
+    - generic [ref=e100]:
+      - generic [ref=e101]:
+        - generic [ref=e102]:
+          - text: WHY MOZIAPI
+          - heading "大模型接入，应该更简单。" [level=2] [ref=e103]
+        - paragraph [ref=e104]: 从接口稳定性到每一枚 Token 的消费记录，我们把复杂的上游管理留给系统，把清晰、快速的 API 留给你。
+      - generic [ref=e105]:
+        - article [ref=e106]:
+          - text: "01"
+          - heading "稳定可用" [level=3] [ref=e107]
+          - paragraph [ref=e108]: 多上游智能调度与故障切换，减少单一通道波动对业务的影响。
+        - article [ref=e109]:
+          - text: "02"
+          - heading "价格更低" [level=3] [ref=e110]
+          - paragraph [ref=e111]: GPT 模型价格约为官网的十分之一，让高频调用和批量任务更从容。
+        - article [ref=e112]:
+          - text: "03"
+          - heading "接入方便" [level=3] [ref=e113]
+          - paragraph [ref=e114]: 兼容主流 API 调用方式，替换 Base URL 和密钥即可快速迁移。
+        - article [ref=e115]:
+          - text: "04"
+          - heading "响应更快" [level=3] [ref=e116]
+          - paragraph [ref=e117]: 优化请求链路与节点调度，为流式对话和在线应用提供快速响应。
+        - article [ref=e118]:
+          - text: "05"
+          - heading "价格透明" [level=3] [ref=e119]
+          - paragraph [ref=e120]: 输入、输出分别定价，不隐藏模型费率，调用前即可估算成本。
+        - article [ref=e121]:
+          - text: "06"
+          - heading "Token 透明" [level=3] [ref=e122]
+          - paragraph [ref=e123]: 每次调用的输入、输出 Token 与费用明细均可查询，账单清晰可追溯。
+    - generic [ref=e125]:
+      - generic [ref=e126]:
+        - generic [ref=e127]:
+          - text: TRANSPARENT PRICING
+          - heading "前沿 GPT 模型，约 1 折价格。" [level=2] [ref=e128]
+        - paragraph [ref=e129]: 输入、输出与缓存 Token 分开计价，没有复杂套餐。最终价格以控制台实时计费为准。
+      - generic [ref=e130]:
+        - generic [ref=e131]:
+          - generic [ref=e132]: GPT API PRICE
+          - generic [ref=e133]: 单位：美元 / 100 万 Tokens
+        - table "GPT 模型价格对比" [ref=e134]:
+          - row "模型 厂商 / 上下文 输入（官方价） 输出（官方价） 输入（MoziAPI） 输出（MoziAPI）" [ref=e135]:
+            - generic [ref=e136]: 模型
+            - generic [ref=e137]: 厂商 / 上下文
+            - generic [ref=e138]: 输入（官方价）
+            - generic [ref=e139]: 输出（官方价）
+            - generic [ref=e140]: 输入（MoziAPI）
+            - generic [ref=e141]: 输出（MoziAPI）
+          - row "GPT-5.6 Sol OpenAI 1M 上下文 $5.0000 缓存：$0.5000 $30.0000 $0.5400 约 1 折 缓存：$0.0540 $3.2400 约 1 折" [ref=e142]:
+            - strong [ref=e144]: GPT-5.6 Sol
+            - generic [ref=e145]:
+              - generic [ref=e146]: OpenAI
+              - generic [ref=e147]: 1M 上下文
+            - generic [ref=e148]:
+              - strong [ref=e149]: $5.0000
+              - generic [ref=e150]: 缓存：$0.5000
+            - strong [ref=e152]: $30.0000
+            - generic [ref=e153]:
+              - strong [ref=e154]: $0.5400
+              - emphasis [ref=e155]: 约 1 折
+              - generic [ref=e156]: 缓存：$0.0540
+            - generic [ref=e157]:
+              - strong [ref=e158]: $3.2400
+              - emphasis [ref=e159]: 约 1 折
+          - row "GPT-5.6 Terra OpenAI 1M 上下文 $2.5000 缓存：$0.2500 $15.0000 $0.2675 约 1 折 缓存：$0.0268 $1.6050 约 1 折" [ref=e160]:
+            - strong [ref=e162]: GPT-5.6 Terra
+            - generic [ref=e163]:
+              - generic [ref=e164]: OpenAI
+              - generic [ref=e165]: 1M 上下文
+            - generic [ref=e166]:
+              - strong [ref=e167]: $2.5000
+              - generic [ref=e168]: 缓存：$0.2500
+            - strong [ref=e170]: $15.0000
+            - generic [ref=e171]:
+              - strong [ref=e172]: $0.2675
+              - emphasis [ref=e173]: 约 1 折
+              - generic [ref=e174]: 缓存：$0.0268
+            - generic [ref=e175]:
+              - strong [ref=e176]: $1.6050
+              - emphasis [ref=e177]: 约 1 折
+          - row "GPT-5.6 Luna OpenAI 1M 上下文 $1.0000 缓存：$0.1000 $6.0000 $0.1050 约 1 折 缓存：$0.0105 $0.6300 约 1 折" [ref=e178]:
+            - strong [ref=e180]: GPT-5.6 Luna
+            - generic [ref=e181]:
+              - generic [ref=e182]: OpenAI
+              - generic [ref=e183]: 1M 上下文
+            - generic [ref=e184]:
+              - strong [ref=e185]: $1.0000
+              - generic [ref=e186]: 缓存：$0.1000
+            - strong [ref=e188]: $6.0000
+            - generic [ref=e189]:
+              - strong [ref=e190]: $0.1050
+              - emphasis [ref=e191]: 约 1 折
+              - generic [ref=e192]: 缓存：$0.0105
+            - generic [ref=e193]:
+              - strong [ref=e194]: $0.6300
+              - emphasis [ref=e195]: 约 1 折
+          - row "GPT-5.5 OpenAI 1M 上下文 $5.0000 缓存：$0.5000 $30.0000 $0.5300 约 1 折 缓存：$0.0530 $3.1800 约 1 折" [ref=e196]:
+            - strong [ref=e198]: GPT-5.5
+            - generic [ref=e199]:
+              - generic [ref=e200]: OpenAI
+              - generic [ref=e201]: 1M 上下文
+            - generic [ref=e202]:
+              - strong [ref=e203]: $5.0000
+              - generic [ref=e204]: 缓存：$0.5000
+            - strong [ref=e206]: $30.0000
+            - generic [ref=e207]:
+              - strong [ref=e208]: $0.5300
+              - emphasis [ref=e209]: 约 1 折
+              - generic [ref=e210]: 缓存：$0.0530
+            - generic [ref=e211]:
+              - strong [ref=e212]: $3.1800
+              - emphasis [ref=e213]: 约 1 折
+          - row "GPT-5.4 OpenAI 1M 上下文 $2.5000 缓存：$0.2500 $15.0000 $0.2700 约 1 折 缓存：$0.0270 $1.6200 约 1 折" [ref=e214]:
+            - strong [ref=e216]: GPT-5.4
+            - generic [ref=e217]:
+              - generic [ref=e218]: OpenAI
+              - generic [ref=e219]: 1M 上下文
+            - generic [ref=e220]:
+              - strong [ref=e221]: $2.5000
+              - generic [ref=e222]: 缓存：$0.2500
+            - strong [ref=e224]: $15.0000
+            - generic [ref=e225]:
+              - strong [ref=e226]: $0.2700
+              - emphasis [ref=e227]: 约 1 折
+              - generic [ref=e228]: 缓存：$0.0270
+            - generic [ref=e229]:
+              - strong [ref=e230]: $1.6200
+              - emphasis [ref=e231]: 约 1 折
+        - paragraph [ref=e232]: 价格可能随模型供应与上游政策调整，最终以 MoziAPI 控制台实时计费为准。
+      - generic [ref=e233]:
+        - generic [ref=e234]:
+          - strong [ref=e235]: PAYG
+          - generic [ref=e236]: 按量计费
+        - paragraph [ref=e237]: 充值即用，根据实际 Token 消耗结算，每笔费用清晰可查。
+        - link "立即注册 →" [ref=e238] [cursor=pointer]:
+          - /url: /register
+    - generic [ref=e240]:
+      - generic [ref=e241]:
+        - text: QUICK START
+        - heading "三步接入 MoziAPI" [level=2] [ref=e242]
+        - paragraph [ref=e243]: 保留熟悉的调用方式，用几分钟完成大模型 API 迁移。
+      - generic [ref=e244]:
+        - article [ref=e245]:
+          - generic [ref=e246]: "1"
+          - heading "注册并创建密钥" [level=3] [ref=e247]
+          - paragraph [ref=e248]: 登录控制台，创建专属 API Key。
+        - article [ref=e249]:
+          - generic [ref=e250]: "2"
+          - heading "替换接口地址" [level=3] [ref=e251]
+          - paragraph [ref=e252]: 将客户端 Base URL 修改为 MoziAPI 接口地址。
+        - article [ref=e253]:
+          - generic [ref=e254]: "3"
+          - heading "选择模型调用" [level=3] [ref=e255]
+          - paragraph [ref=e256]: 指定 GPT、Claude 等模型，实时查看 Token 与费用。
+    - generic [ref=e258]:
+      - generic [ref=e259]:
+        - text: REFERRAL REWARDS
+        - heading [level=2] [ref=e260]:
+          - text: 分享好用的 API，持续获得
+          - emphasis [ref=e261]: 10% 返利
+          - text: 。
+        - paragraph [ref=e262]: 邀请用户注册并使用 MoziAPI，即可获得其消费金额 10% 的推广返利。让每一次推荐都有长期价值。
+        - link "登录查看推广计划 →" [ref=e263] [cursor=pointer]:
+          - /url: /login
+      - generic [ref=e264]:
+        - generic [ref=e267]:
+          - strong [ref=e268]: 10%
+          - generic [ref=e269]: 推广返利
+        - generic [ref=e270]: A
+        - generic [ref=e271]: B
+        - generic [ref=e272]: C
+    - generic [ref=e274]:
+      - generic [ref=e275]:
+        - text: FAQ
+        - heading "关于大模型 API 中转" [level=2] [ref=e276]
+        - paragraph [ref=e277]: 开始使用 MoziAPI 前，你可能关心这些问题。
+      - generic [ref=e278]:
+        - group [ref=e279]:
+          - generic "MoziAPI 是 GPT 中转站吗？ −" [ref=e280] [cursor=pointer]
+          - paragraph [ref=e281]: 是。MoziAPI 提供 GPT 等大模型 API 的统一中转接入，并提供兼容接口、用量明细与按量计费。
+        - group [ref=e282]:
+          - generic "是否支持 Claude API 中转？ +" [ref=e283] [cursor=pointer]
+        - group [ref=e284]:
+          - generic "Token 消耗如何查看？ +" [ref=e285] [cursor=pointer]
+        - group [ref=e286]:
+          - generic "MoziAPI 如何计费？ +" [ref=e287] [cursor=pointer]
+    - generic [ref=e289]:
+      - text: START BUILDING
+      - heading "下一次模型调用，从 MoziAPI 开始。" [level=2] [ref=e290]
+      - paragraph [ref=e291]: 立即注册，快速接入 GPT、Claude 等大模型 API。
+      - link "立即注册 →" [ref=e292] [cursor=pointer]:
+        - /url: /register
+  - contentinfo [ref=e293]:
+    - generic [ref=e294]:
+      - generic [ref=e295]:
+        - generic [ref=e296]:
+          - generic [ref=e297]: M
+          - generic [ref=e298]: moziapi
+        - paragraph [ref=e299]: 稳定、透明、易接入的大模型 API 中转服务。
+      - generic [ref=e300]:
+        - link "价格" [ref=e301] [cursor=pointer]:
+          - /url: "#pricing"
+        - link "快速接入" [ref=e302] [cursor=pointer]:
+          - /url: "#quick-start"
+        - link "控制台" [ref=e303] [cursor=pointer]:
+          - /url: /login
+    - generic [ref=e304]:
+      - generic [ref=e305]: © 2026 moziapi
+      - generic [ref=e306]: 模型名称归其各自权利人所有
