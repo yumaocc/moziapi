@@ -5,7 +5,24 @@ set -Eeuo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-SSH_TARGET="${SSH_TARGET:-root@67.230.163.225}"
+if ! read -r -p '请输入服务器 IP 地址（IPv4）: ' SERVER_IP; then
+  printf '\n[deploy] 未输入服务器 IP，已取消部署。\n' >&2
+  exit 1
+fi
+
+if [[ ! "${SERVER_IP}" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+  printf '[deploy] 请输入有效的 IPv4 地址。\n' >&2
+  exit 1
+fi
+IFS=. read -r -a ip_octets <<<"${SERVER_IP}"
+for octet in "${ip_octets[@]}"; do
+  if (( 10#${octet} > 255 )); then
+    printf '[deploy] 请输入有效的 IPv4 地址。\n' >&2
+    exit 1
+  fi
+done
+
+SSH_TARGET="${SSH_USER:-root}@${SERVER_IP}"
 REMOTE_APP_DIR="${REMOTE_APP_DIR:-/opt/sub2api}"
 COMPOSE_SERVICE="${COMPOSE_SERVICE:-sub2api}"
 RELEASE_ID="${RELEASE_ID:-$(date +%Y%m%d-%H%M%S)}"
