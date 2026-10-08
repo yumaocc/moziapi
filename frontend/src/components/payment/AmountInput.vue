@@ -71,6 +71,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import type { RechargeBonusTier } from '@/types/payment'
+import { quoteRechargeBonus, type RechargeBonusMode } from '@/utils/rechargeBonus'
 import { currencySymbol, normalizePaymentCurrency } from '@/components/payment/currency'
 
 const props = withDefaults(defineProps<{
@@ -80,12 +82,16 @@ const props = withDefaults(defineProps<{
   max?: number
   currency?: string
   multiplier?: number
+  bonusTiers?: RechargeBonusTier[]
+  bonusMode?: RechargeBonusMode
 }>(), {
   amounts: () => [10, 20, 50, 100, 200, 500, 1000, 2000, 5000],
   min: 0,
   max: 0,
   currency: 'CNY',
   multiplier: 1,
+  bonusTiers: () => [],
+  bonusMode: 'bonus',
 })
 
 const emit = defineEmits<{
@@ -101,7 +107,7 @@ const normalizedMultiplier = computed(() =>
 )
 
 const formatAmount = (value: number) => value.toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1')
-const creditedAmount = (amount: number) => Math.round(amount * normalizedMultiplier.value * 100) / 100
+const creditedAmount = (amount: number) => quoteRechargeBonus(props.bonusTiers, amount, { multiplier: normalizedMultiplier.value, mode: props.bonusMode, currencyDigits: 2 }).credited
 const giftAmount = (amount: number) => Math.max(0, Math.round((creditedAmount(amount) - amount) * 100) / 100)
 const quickAmountAriaLabel = (amount: number) => {
   const credited = creditedAmount(amount)

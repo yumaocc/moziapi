@@ -2,6 +2,7 @@ import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { CustomMenuItem } from '@/types'
 import { i18n } from '@/i18n'
 import { resolveRouteDocumentTitle } from './title'
+import type { SiteBillingMode } from '@/utils/siteBillingMode'
 
 export const INDEX_ROBOTS_CONTENT =
   'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' as const
@@ -50,6 +51,7 @@ export interface ResolveRouteSeoOptions {
   customMenuItems?: CustomMenuItem[]
   basePath?: string
   forceNoindex?: boolean
+  billingMode?: SiteBillingMode
 }
 
 export interface ApplyRouteSeoOptions extends Omit<ResolveRouteSeoOptions, 'origin'> {
@@ -142,6 +144,7 @@ export function resolveRouteSeoMetadata(
     route,
     options.siteName,
     options.customMenuItems ?? [],
+    { billingMode: options.billingMode },
   )
   const description = resolveDescription(route, options.siteName, options.siteDescription)
   const keywords = resolveKeywords(route)

@@ -70,6 +70,7 @@ func TestCreateOrderInTx_WritesProviderSnapshot(t *testing.T) {
 		ctx,
 		CreateOrderRequest{
 			UserID:      user.ID,
+			Amount:      88,
 			PaymentType: payment.TypeAlipay,
 			OrderType:   payment.OrderTypeBalance,
 			ClientIP:    "127.0.0.1",
@@ -89,6 +90,7 @@ func TestCreateOrderInTx_WritesProviderSnapshot(t *testing.T) {
 		88,
 		0,
 		88,
+		0,
 		&payment.InstanceSelection{
 			InstanceID:     strconv.FormatInt(instance.ID, 10),
 			ProviderKey:    payment.TypeAlipay,
@@ -243,4 +245,68 @@ func valueOrEmpty(v *string) string {
 		return ""
 	}
 	return *v
+}
+
+func TestCreateOrderInTx_DiscountKeepsRequestedUSDAndDailyLimit(t *testing.T) {
+	ctx := context.Background()
+	client := newPaymentConfigServiceTestClient(t)
+
+	user, err := client.User.Create().
+		SetEmail("snapshot@example.com").
+		SetPasswordHash("hash").
+		SetUsername("snapshot-user").
+		Save(ctx)
+	require.NoError(t, err)
+
+	instance, err := client.PaymentProviderInstance.Create().
+		SetProviderKey(payment.TypeAlipay).
+		SetName("Primary Alipay").
+		SetConfig(`{"secretKey":"do-not-copy"}`).
+		SetSupportedTypes("alipay,alipay_direct").
+		SetPaymentMode("redirect").
+		SetEnabled(true).
+		Save(ctx)
+	require.NoError(t, err)
+
+	svc := &PaymentService{entClient: client}
+	order, err := svc.createOrderInTx(
+		ctx,
+		CreateOrderRequest{
+			UserID:      user.ID,
+			Amount:      88,
+			PaymentType: payment.TypeAlipay,
+			OrderType:   payment.OrderTypeBalance,
+			ClientIP:    "127.0.0.1",
+			SrcHost:     "app.example.com",
+		},
+		&User{
+			ID:       user.ID,
+			Email:    user.Email,
+			Username: user.Username,
+		},
+		nil,
+		&PaymentConfig{
+			MaxPendingOrders:          3,
+			OrderTimeoutMin:           30,
+			BalanceRechargeMultiplier: 3,
+			DailyLimit:                80,
+		},
+		264,
+		70.4,
+		0,
+		70.4,
+		52.8,
+		&payment.InstanceSelection{
+			InstanceID:     strconv.FormatInt(instance.ID, 10),
+			ProviderKey:    payment.TypeAlipay,
+			SupportedTypes: "alipay,alipay_direct",
+			PaymentMode:    "redirect",
+			Config: map[string]string{
+				"secretKey": "do-not-copy",
+			},
+		},
+	)
+	require.Error(t, err)
+	require.Nil(t, order)
+	require.Contains(t, err.Error(), "daily")
 }

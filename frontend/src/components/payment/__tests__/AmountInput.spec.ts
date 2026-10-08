@@ -40,6 +40,12 @@ describe('AmountInput currency display', () => {
     expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([10])
   })
 
+  it('combines upstream bonus tiers with the local promotional multiplier', () => {
+    const wrapper = mount(AmountInput, { props: { modelValue: 10, amounts: [10], currency: 'USD', multiplier: 3, bonusTiers: [{ min_amount: 10, bonus_percent: 20 }] } })
+    expect(wrapper.get('button').text()).toContain('$36')
+    expect(wrapper.get('button').text()).toContain('+$26')
+  })
+
   it('shows credited and promotional amounts on every quick amount card', async () => {
     const wrapper = mount(AmountInput, {
       props: {
