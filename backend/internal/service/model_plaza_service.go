@@ -4,9 +4,12 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
+	"sync"
+	"time"
 
-	"github.com/Wei-Shaw/sub2api/internal/pkg/openai"
+	"golang.org/x/sync/singleflight"
 )
 
 // PlazaOfficialPricing 模型广场展示用的官方参考价（USD per token），与计费同源：
@@ -66,19 +69,38 @@ type PlazaGroup struct {
 
 // ModelPlazaService 聚合模型广场数据。
 //
-// 模型枚举来自渠道配置及分组绑定账号的模型映射；token 模型的展示单价与阶梯由 BillingService 的阶梯表
+// 模型枚举来自渠道配置及分组绑定账号的上游模型列表；token 模型的展示单价与阶梯由 BillingService 的阶梯表
 // 查询给出（与扣费走同一条解析链与计费函数），图片/按次模型沿用渠道/分组档位价。
 type ModelPlazaService struct {
-	channelRepo    ChannelRepository
-	groupRepo      GroupRepository
-	accountRepo    AccountRepository
-	pricingService *PricingService
-	billingService *BillingService
-	resolver       *ModelPricingResolver
+	channelRepo     ChannelRepository
+	groupRepo       GroupRepository
+	accountRepo     AccountRepository
+	modelDiscoverer PlazaAccountModelDiscoverer
+	pricingService  *PricingService
+	billingService  *BillingService
+	resolver        *ModelPricingResolver
+	modelCacheMu    sync.Mutex
+	modelCache      map[int64]plazaCachedModels
+	modelFlight     singleflight.Group
 }
 
-// WithAccountRepository includes models served by active group accounts even
-// when an operator has not configured a separate channel model catalog.
+type PlazaAccountModelDiscoverer interface {
+	FetchUpstreamSupportedModels(context.Context, *Account) ([]string, error)
+}
+
+type plazaCachedModels struct {
+	models    []string
+	expiresAt time.Time
+}
+
+const plazaModelCacheTTL = 5 * time.Minute
+
+func (s *ModelPlazaService) WithAccountModelDiscoverer(discoverer PlazaAccountModelDiscoverer) *ModelPlazaService {
+	s.modelDiscoverer = discoverer
+	return s
+}
+
+// WithAccountRepository supplies the active accounts and their group bindings.
 func (s *ModelPlazaService) WithAccountRepository(repo AccountRepository) *ModelPlazaService {
 	s.accountRepo = repo
 	return s
@@ -103,7 +125,7 @@ func NewModelPlazaService(
 
 // ListGroups 返回模型广场数据：每个活跃分组附带其可用模型与定价。
 //
-// 模型枚举以活跃渠道的 SupportedModels 为基础，并补充活跃分组账号声明的模型，
+// 模型枚举以活跃渠道的 SupportedModels 为基础，并补充活跃分组账号向上游发现的模型，
 // 让没有单独配置渠道模型的 GPT/Grok 分组也能展示：
 //   - 渠道按 lower(name) 排序后遍历，保证同名模型去重结果确定；
 //   - 同分组同名模型「先见者胜」，仅当已存条目无定价而新条目有定价时升级替换；
@@ -212,12 +234,42 @@ func (s *ModelPlazaService) ListGroups(ctx context.Context) ([]PlazaGroup, error
 		if err != nil {
 			return nil, fmt.Errorf("list active accounts: %w", err)
 		}
-		accountsByGroup := make(map[int64][]*Account, len(groups))
+		accountsByGroup := make(map[int64][]int, len(groups))
 		for i := range accounts {
 			for _, gid := range accounts[i].GroupIDs {
-				accountsByGroup[gid] = append(accountsByGroup[gid], &accounts[i])
+				accountsByGroup[gid] = append(accountsByGroup[gid], i)
 			}
 		}
+		// Public reads must not serially wait on every provider's /models endpoint.
+		discoveryCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+		accountModels := make([][]string, len(accounts))
+		limit := make(chan struct{}, 6)
+		var pending sync.WaitGroup
+		for i := range accounts {
+			eligible := false
+			for _, gid := range accounts[i].GroupIDs {
+				if group := byGroup[gid]; group != nil && (group.Platform == PlatformComposite || group.Platform == accounts[i].Platform) {
+					eligible = true
+					break
+				}
+			}
+			if !eligible {
+				continue
+			}
+			pending.Add(1)
+			go func(i int) {
+				defer pending.Done()
+				select {
+				case limit <- struct{}{}:
+					defer func() { <-limit }()
+				case <-discoveryCtx.Done():
+					return
+				}
+				accountModels[i] = s.discoverAccountModels(discoveryCtx, &accounts[i])
+			}(i)
+		}
+		pending.Wait()
+		cancel()
 		for _, gid := range order {
 			pg := byGroup[gid]
 			group := groupEnt[gid]
@@ -226,11 +278,12 @@ func (s *ModelPlazaService) ListGroups(ctx context.Context) ([]PlazaGroup, error
 				idx = make(map[modelKey]int)
 				modelIdx[gid] = idx
 			}
-			for _, account := range accountsByGroup[gid] {
+			for _, accountIndex := range accountsByGroup[gid] {
+				account := &accounts[accountIndex]
 				if account.Platform != pg.Platform && pg.Platform != PlatformComposite {
 					continue
 				}
-				for _, name := range plazaAccountModelNames(account) {
+				for _, name := range accountModels[accountIndex] {
 					if !group.ModelAllowlist.Allows(name) {
 						continue
 					}
@@ -275,27 +328,68 @@ func (s *ModelPlazaService) ListGroups(ctx context.Context) ([]PlazaGroup, error
 	return out, nil
 }
 
-func plazaAccountModelNames(account *Account) []string {
-	mapping := account.GetModelMapping()
-	names := make([]string, 0, len(mapping))
-	hasWildcard := false
-	for name := range mapping {
-		name = strings.TrimSpace(name)
-		if strings.Contains(name, "*") {
-			hasWildcard = true
-		} else if name != "" {
-			names = append(names, name)
+func (s *ModelPlazaService) discoverAccountModels(ctx context.Context, account *Account) []string {
+	if s.modelDiscoverer == nil || account == nil || account.ID <= 0 {
+		return nil
+	}
+	now := time.Now()
+	s.modelCacheMu.Lock()
+	cached, found := s.modelCache[account.ID]
+	s.modelCacheMu.Unlock()
+	if found && now.Before(cached.expiresAt) {
+		return projectPlazaAccountModels(account, cached.models)
+	}
+
+	value, err, _ := s.modelFlight.Do(strconv.FormatInt(account.ID, 10), func() (any, error) {
+		fetchCtx, cancel := context.WithTimeout(ctx, 6*time.Second)
+		defer cancel()
+		models, fetchErr := s.modelDiscoverer.FetchUpstreamSupportedModels(fetchCtx, account)
+		if fetchErr != nil {
+			return nil, fetchErr
+		}
+		models = dedupeAndSortModelIDs(models)
+		s.modelCacheMu.Lock()
+		if s.modelCache == nil {
+			s.modelCache = make(map[int64]plazaCachedModels)
+		}
+		s.modelCache[account.ID] = plazaCachedModels{models: models, expiresAt: time.Now().Add(plazaModelCacheTTL)}
+		s.modelCacheMu.Unlock()
+		return models, nil
+	})
+	if err != nil {
+		// Keep the last observed catalog during a temporary upstream failure.
+		if found {
+			return projectPlazaAccountModels(account, cached.models)
+		}
+		return nil
+	}
+	return projectPlazaAccountModels(account, value.([]string))
+}
+
+func projectPlazaAccountModels(account *Account, upstreamIDs []string) []string {
+	upstream := make(map[string]struct{}, len(upstreamIDs))
+	names := make([]string, 0, len(upstreamIDs))
+	for _, id := range upstreamIDs {
+		id = strings.TrimSpace(id)
+		if id == "" {
+			continue
+		}
+		upstream[strings.ToLower(id)] = struct{}{}
+		if account.IsModelSupported(id) {
+			names = append(names, id)
 		}
 	}
-	if account.Platform == PlatformOpenAI && (len(mapping) == 0 || hasWildcard || account.IsOpenAIPassthroughEnabled()) {
-		for _, name := range openai.DefaultModelIDs() {
-			if account.IsModelSupported(name) {
-				names = append(names, name)
-			}
+	for alias := range account.GetModelMapping() {
+		alias = strings.TrimSpace(alias)
+		if alias == "" || strings.Contains(alias, "*") {
+			continue
+		}
+		target := account.GetMappedModel(alias)
+		if _, ok := upstream[strings.ToLower(target)]; ok {
+			names = append(names, alias)
 		}
 	}
-	sort.Strings(names)
-	return names
+	return dedupeAndSortModelIDs(names)
 }
 
 // fillDisplayPricing 把模型的展示定价换成实收口径：

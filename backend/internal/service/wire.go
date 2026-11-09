@@ -47,12 +47,14 @@ func ProvideModelPlazaService(
 	channelRepo ChannelRepository,
 	groupRepo GroupRepository,
 	accountRepo AccountRepository,
+	accountTestService *AccountTestService,
 	pricingService *PricingService,
 	billingService *BillingService,
 	resolver *ModelPricingResolver,
 ) *ModelPlazaService {
 	return NewModelPlazaService(channelRepo, groupRepo, pricingService, billingService, resolver).
-		WithAccountRepository(accountRepo)
+		WithAccountRepository(accountRepo).
+		WithAccountModelDiscoverer(accountTestService)
 }
 
 // ProvideUpdateService creates UpdateService with BuildInfo

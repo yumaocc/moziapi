@@ -24,6 +24,14 @@ type plazaAccountRepo struct {
 	accounts []Account
 }
 
+type plazaModelDiscoverer struct {
+	models map[int64][]string
+}
+
+func (d plazaModelDiscoverer) FetchUpstreamSupportedModels(_ context.Context, account *Account) ([]string, error) {
+	return d.models[account.ID], nil
+}
+
 func (r plazaAccountRepo) ListActive(context.Context) ([]Account, error) {
 	return r.accounts, nil
 }
@@ -35,24 +43,26 @@ func TestListPlazaGroups_IncludesAccountsWithoutChannelCatalog(t *testing.T) {
 	}
 	svc := newPlazaService(nil, groups, nil).WithAccountRepository(plazaAccountRepo{
 		accounts: []Account{
-			{Platform: PlatformOpenAI, GroupIDs: []int64{10}, Credentials: map[string]any{"model_mapping": map[string]any{"gpt-5.4": "gpt-5.4"}}},
-			{Platform: PlatformGrok, GroupIDs: []int64{20}, Credentials: map[string]any{"model_mapping": map[string]any{"grok-4": "grok-4"}}},
+			{ID: 1, Platform: PlatformOpenAI, GroupIDs: []int64{10}},
+			{ID: 2, Platform: PlatformGrok, GroupIDs: []int64{20}},
 		},
-	})
+	}).WithAccountModelDiscoverer(plazaModelDiscoverer{models: map[int64][]string{
+		1: {"gpt-5.4"},
+		2: {"grok-4.5"},
+	}})
 	out, err := svc.ListGroups(context.Background())
 	require.NoError(t, err)
 	require.Len(t, out, 2)
 	require.Equal(t, "gpt-5.4", out[0].Models[0].Name)
-	require.Equal(t, "grok-4", out[1].Models[0].Name)
+	require.Equal(t, "grok-4.5", out[1].Models[0].Name)
 }
 
-func TestPlazaAccountModelNames_UsesProviderDefaultsWhenUnmapped(t *testing.T) {
-	require.Contains(t, plazaAccountModelNames(&Account{Platform: PlatformOpenAI}), "gpt-5.4")
-	require.Contains(t, plazaAccountModelNames(&Account{Platform: PlatformGrok}), "grok-4.5")
-	wildcard := &Account{Platform: PlatformOpenAI, Credentials: map[string]any{
-		"model_mapping": map[string]any{"gpt-5.*": "gpt-5.*"},
+func TestProjectPlazaAccountModels_UsesObservedModelsOnly(t *testing.T) {
+	account := &Account{Platform: PlatformOpenAI, Credentials: map[string]any{
+		"model_mapping": map[string]any{"public-gpt": "gpt-5.4"},
 	}}
-	require.Contains(t, plazaAccountModelNames(wildcard), "gpt-5.4")
+	require.Equal(t, []string{"public-gpt"}, projectPlazaAccountModels(account, []string{"gpt-5.4", "gpt-5.5"}))
+	require.Empty(t, projectPlazaAccountModels(account, nil))
 }
 
 func plazaPricedChannel(id int64, name string, groupIDs []int64, platform string, models ...string) Channel {
