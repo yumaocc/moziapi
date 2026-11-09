@@ -162,6 +162,25 @@ func (h *ModelPlazaHandler) Get(c *gin.Context) {
 	})
 }
 
+// GetHomepage returns only public standard groups for the public homepage.
+// It is independent of the optional model-plaza page switch, while never
+// exposing exclusive or subscription groups to anonymous visitors.
+func (h *ModelPlazaHandler) GetHomepage(c *gin.Context) {
+	groups, err := h.plazaService.ListGroups(c.Request.Context())
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	out := make([]modelPlazaGroup, 0, len(groups))
+	for i := range groups {
+		if groups[i].IsExclusive || groups[i].SubscriptionType != service.SubscriptionTypeStandard {
+			continue
+		}
+		out = append(out, toModelPlazaGroupDTO(&groups[i], nil))
+	}
+	response.Success(c, modelPlazaResponse{Groups: out})
+}
+
 // filterPlazaVisibleGroups 按登录态裁剪分组可见性。
 // allowedGroups == nil 表示匿名（仅非专属）；非 nil 包含普通授权及有效订阅分组。
 // restrictPublicGroups 为 true 时，公开分组也必须落在 allowedGroups 内，否则用户会

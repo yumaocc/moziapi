@@ -73,6 +73,43 @@ for command_name in docker ssh scp gzip awk; do
   require_command "${command_name}"
 done
 
+# Deploy the latest upstream source by default. Set SYNC_UPSTREAM=0 to deploy
+# the current checkout without fetching or merging sub2api.
+if [[ "${SYNC_UPSTREAM:-1}" == "1" ]]; then
+  require_command git
+  if [[ "$(git -C "${REPO_ROOT}" branch --show-current)" != "main" ]]; then
+    printf '[deploy] upstream sync requires the local main branch.\n' >&2
+    exit 1
+  fi
+  if [[ -n "$(git -C "${REPO_ROOT}" status --porcelain)" ]]; then
+    printf '[deploy] commit or stash local changes before upstream sync.\n' >&2
+    exit 1
+  fi
+
+  if ! upstream_url="$(git -C "${REPO_ROOT}" remote get-url upstream 2>/dev/null)"; then
+    git -C "${REPO_ROOT}" remote add upstream https://github.com/Wei-Shaw/sub2api.git
+  elif [[ "${upstream_url}" != "https://github.com/Wei-Shaw/sub2api.git" && "${upstream_url}" != "git@github.com:Wei-Shaw/sub2api.git" ]]; then
+    printf '[deploy] upstream remote does not point to Wei-Shaw/sub2api: %s\n' "${upstream_url}" >&2
+    exit 1
+  fi
+
+  log "fetching latest sub2api main"
+  git -C "${REPO_ROOT}" fetch upstream main
+  if ! git -C "${REPO_ROOT}" merge-base --is-ancestor upstream/main HEAD; then
+    backup_branch="codex/pre-deploy-sync-${RELEASE_ID}"
+    git -C "${REPO_ROOT}" branch "${backup_branch}" HEAD
+    log "backup branch: ${backup_branch}"
+    git -C "${REPO_ROOT}" merge --no-edit --no-ff upstream/main || {
+      printf '[deploy] upstream merge has conflicts; resolve them before deploying.\n' >&2
+      exit 1
+    }
+  fi
+  log "source revision: $(git -C "${REPO_ROOT}" rev-parse --short HEAD)"
+elif [[ "${SYNC_UPSTREAM}" != "0" ]]; then
+  printf '[deploy] SYNC_UPSTREAM must be 0 or 1.\n' >&2
+  exit 1
+fi
+
 [[ -f "${REPO_ROOT}/Dockerfile" ]] || {
   printf '[deploy] Dockerfile not found: %s\n' "${REPO_ROOT}/Dockerfile" >&2
   exit 1

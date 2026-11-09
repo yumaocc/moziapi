@@ -31,14 +31,16 @@ describe('HomeView currency copy', () => {
     expect(homeTemplate.match(/<small>\/ 1M Tokens<\/small>/g)).toHaveLength(3)
     expect(homeTemplate).not.toContain('class="vendor-cell"')
     expect(homeTemplate).not.toContain('class="compare-line')
-    expect(homeViewSource).toContain('const compactMoney = (value: number)')
+    expect(homeViewSource).toContain('const compactMoney = (value: number | null)')
   })
 
-  it('loads official reference prices from the public pricing API with a fallback', () => {
-    expect(homeViewSource).toContain("import { getPublicModelPricing } from '@/api/modelPricing'")
-    expect(homeViewSource).toContain('const response = await getPublicModelPricing()')
-    expect(homeViewSource).toContain("pricingFeedState.value = 'live'")
-    expect(homeViewSource).toContain("pricingFeedState.value = 'fallback'")
+  it('loads available models and real prices from the homepage catalog', () => {
+    expect(homeViewSource).toContain('const response = await getHomepageModels()')
+    expect(homeViewSource).toContain("groups.value.length > 0 ? 'live' : 'unavailable'")
+    expect(homeViewSource).toContain("pricingFeedState.value = 'unavailable'")
+    expect(homeViewSource).not.toContain('fallbackModelPrices')
+    expect(homeTemplate).not.toContain('campaignDeadlineLabel')
+    expect(homeTemplate).not.toContain('campaignCountdownLabel')
   })
 
   it('derives every recharge bonus amount from the public payment multiplier', () => {

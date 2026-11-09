@@ -96,6 +96,14 @@ export async function getModelPlaza(options?: { signal?: AbortSignal }): Promise
   return data
 }
 
-export const modelPlazaAPI = { getModelPlaza }
+/** Public homepage catalog: active models in public standard groups. */
+export async function getHomepageModels(options?: { signal?: AbortSignal }): Promise<ModelPlazaResponse> {
+  const { data } = await apiClient.get<ModelPlazaResponse>('/model-plaza/homepage', {
+    signal: options?.signal
+  })
+  return data
+}
+
+export const modelPlazaAPI = { getModelPlaza, getHomepageModels }
 
 export default modelPlazaAPI
