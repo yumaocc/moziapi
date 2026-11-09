@@ -43,6 +43,18 @@ func ProvidePricingService(cfg *config.Config, remoteClient PricingRemoteClient)
 	return svc, nil
 }
 
+func ProvideModelPlazaService(
+	channelRepo ChannelRepository,
+	groupRepo GroupRepository,
+	accountRepo AccountRepository,
+	pricingService *PricingService,
+	billingService *BillingService,
+	resolver *ModelPricingResolver,
+) *ModelPlazaService {
+	return NewModelPlazaService(channelRepo, groupRepo, pricingService, billingService, resolver).
+		WithAccountRepository(accountRepo)
+}
+
 // ProvideUpdateService creates UpdateService with BuildInfo
 func ProvideUpdateService(cache UpdateCache, githubClient GitHubReleaseClient, buildInfo BuildInfo) *UpdateService {
 	return NewUpdateService(cache, githubClient, buildInfo.Version, buildInfo.BuildType)
@@ -979,7 +991,7 @@ var ProviderSet = wire.NewSet(
 	NewChannelService,
 	wire.Bind(new(ChannelCacheInvalidator), new(*ChannelService)),
 	NewModelPricingResolver,
-	NewModelPlazaService,
+	ProvideModelPlazaService,
 	NewContentModerationService,
 	NewAffiliateService,
 	ProvidePaymentConfigService,

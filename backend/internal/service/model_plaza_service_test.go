@@ -19,6 +19,42 @@ func newPlazaService(channels []Channel, groups []Group, pricing *PricingService
 	return NewModelPlazaService(repo, &stubGroupRepoForAvailable{activeGroups: groups}, pricing, nil, nil)
 }
 
+type plazaAccountRepo struct {
+	AccountRepository
+	accounts []Account
+}
+
+func (r plazaAccountRepo) ListActive(context.Context) ([]Account, error) {
+	return r.accounts, nil
+}
+
+func TestListPlazaGroups_IncludesAccountsWithoutChannelCatalog(t *testing.T) {
+	groups := []Group{
+		{ID: 10, Name: "GPT", Platform: PlatformOpenAI, RateMultiplier: 0.2},
+		{ID: 20, Name: "Grok", Platform: PlatformGrok, RateMultiplier: 0.4},
+	}
+	svc := newPlazaService(nil, groups, nil).WithAccountRepository(plazaAccountRepo{
+		accounts: []Account{
+			{Platform: PlatformOpenAI, GroupIDs: []int64{10}, Credentials: map[string]any{"model_mapping": map[string]any{"gpt-5.4": "gpt-5.4"}}},
+			{Platform: PlatformGrok, GroupIDs: []int64{20}, Credentials: map[string]any{"model_mapping": map[string]any{"grok-4": "grok-4"}}},
+		},
+	})
+	out, err := svc.ListGroups(context.Background())
+	require.NoError(t, err)
+	require.Len(t, out, 2)
+	require.Equal(t, "gpt-5.4", out[0].Models[0].Name)
+	require.Equal(t, "grok-4", out[1].Models[0].Name)
+}
+
+func TestPlazaAccountModelNames_UsesProviderDefaultsWhenUnmapped(t *testing.T) {
+	require.Contains(t, plazaAccountModelNames(&Account{Platform: PlatformOpenAI}), "gpt-5.4")
+	require.Contains(t, plazaAccountModelNames(&Account{Platform: PlatformGrok}), "grok-4.5")
+	wildcard := &Account{Platform: PlatformOpenAI, Credentials: map[string]any{
+		"model_mapping": map[string]any{"gpt-5.*": "gpt-5.*"},
+	}}
+	require.Contains(t, plazaAccountModelNames(wildcard), "gpt-5.4")
+}
+
 func plazaPricedChannel(id int64, name string, groupIDs []int64, platform string, models ...string) Channel {
 	return Channel{
 		ID:       id,

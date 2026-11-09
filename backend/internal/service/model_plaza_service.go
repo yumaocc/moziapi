@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+
+	"github.com/Wei-Shaw/sub2api/internal/pkg/openai"
 )
 
 // PlazaOfficialPricing 模型广场展示用的官方参考价（USD per token），与计费同源：
@@ -64,14 +66,22 @@ type PlazaGroup struct {
 
 // ModelPlazaService 聚合模型广场数据。
 //
-// 模型枚举来自渠道配置；token 模型的展示单价与阶梯由 BillingService 的阶梯表
+// 模型枚举来自渠道配置及分组绑定账号的模型映射；token 模型的展示单价与阶梯由 BillingService 的阶梯表
 // 查询给出（与扣费走同一条解析链与计费函数），图片/按次模型沿用渠道/分组档位价。
 type ModelPlazaService struct {
 	channelRepo    ChannelRepository
 	groupRepo      GroupRepository
+	accountRepo    AccountRepository
 	pricingService *PricingService
 	billingService *BillingService
 	resolver       *ModelPricingResolver
+}
+
+// WithAccountRepository includes models served by active group accounts even
+// when an operator has not configured a separate channel model catalog.
+func (s *ModelPlazaService) WithAccountRepository(repo AccountRepository) *ModelPlazaService {
+	s.accountRepo = repo
+	return s
 }
 
 // NewModelPlazaService 创建模型广场服务。
@@ -93,8 +103,8 @@ func NewModelPlazaService(
 
 // ListGroups 返回模型广场数据：每个活跃分组附带其可用模型与定价。
 //
-// 模型枚举口径与 ListAvailable 一致（Active 渠道、SupportedModels ∪ 全局定价回落、
-// 平台隔离），仅把顶层从渠道换成分组：
+// 模型枚举以活跃渠道的 SupportedModels 为基础，并补充活跃分组账号声明的模型，
+// 让没有单独配置渠道模型的 GPT/Grok 分组也能展示：
 //   - 渠道按 lower(name) 排序后遍历，保证同名模型去重结果确定；
 //   - 同分组同名模型「先见者胜」，仅当已存条目无定价而新条目有定价时升级替换；
 //   - token 模型的单价与阶梯按实收口径合成（见 ResolveContextPricingSchedule），
@@ -180,7 +190,7 @@ func (s *ModelPlazaService) ListGroups(ctx context.Context) ([]PlazaGroup, error
 				} else if m.Platform != pg.Platform {
 					continue
 				}
-				key := modelKey{platform: m.Platform, name: m.Name}
+				key := modelKey{platform: m.Platform, name: strings.ToLower(m.Name)}
 				if at, seen := idx[key]; seen {
 					// 先见者胜；仅当已存条目无定价而新条目有定价时升级。
 					if pg.Models[at].Pricing == nil && m.Pricing != nil {
@@ -194,6 +204,43 @@ func (s *ModelPlazaService) ListGroups(ctx context.Context) ([]PlazaGroup, error
 					Platform: m.Platform,
 					Pricing:  m.Pricing,
 				})
+			}
+		}
+	}
+	if s.accountRepo != nil {
+		accounts, err := s.accountRepo.ListActive(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("list active accounts: %w", err)
+		}
+		accountsByGroup := make(map[int64][]*Account, len(groups))
+		for i := range accounts {
+			for _, gid := range accounts[i].GroupIDs {
+				accountsByGroup[gid] = append(accountsByGroup[gid], &accounts[i])
+			}
+		}
+		for _, gid := range order {
+			pg := byGroup[gid]
+			group := groupEnt[gid]
+			idx := modelIdx[gid]
+			if idx == nil {
+				idx = make(map[modelKey]int)
+				modelIdx[gid] = idx
+			}
+			for _, account := range accountsByGroup[gid] {
+				if account.Platform != pg.Platform && pg.Platform != PlatformComposite {
+					continue
+				}
+				for _, name := range plazaAccountModelNames(account) {
+					if !group.ModelAllowlist.Allows(name) {
+						continue
+					}
+					key := modelKey{platform: account.Platform, name: strings.ToLower(name)}
+					if _, exists := idx[key]; exists {
+						continue
+					}
+					idx[key] = len(pg.Models)
+					pg.Models = append(pg.Models, PlazaModel{Name: name, Platform: account.Platform})
+				}
 			}
 		}
 	}
@@ -226,6 +273,29 @@ func (s *ModelPlazaService) ListGroups(ctx context.Context) ([]PlazaGroup, error
 		return out[i].Name < out[j].Name
 	})
 	return out, nil
+}
+
+func plazaAccountModelNames(account *Account) []string {
+	mapping := account.GetModelMapping()
+	names := make([]string, 0, len(mapping))
+	hasWildcard := false
+	for name := range mapping {
+		name = strings.TrimSpace(name)
+		if strings.Contains(name, "*") {
+			hasWildcard = true
+		} else if name != "" {
+			names = append(names, name)
+		}
+	}
+	if account.Platform == PlatformOpenAI && (len(mapping) == 0 || hasWildcard || account.IsOpenAIPassthroughEnabled()) {
+		for _, name := range openai.DefaultModelIDs() {
+			if account.IsModelSupported(name) {
+				names = append(names, name)
+			}
+		}
+	}
+	sort.Strings(names)
+	return names
 }
 
 // fillDisplayPricing 把模型的展示定价换成实收口径：
