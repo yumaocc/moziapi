@@ -8,7 +8,7 @@ export const INDEX_ROBOTS_CONTENT =
   'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' as const
 export const NOINDEX_ROBOTS_CONTENT = 'noindex, nofollow' as const
 const MOZI_HOME_TITLE = 'moziapi（mozi）中转站 | GPT API 中转与 OpenAI 国内直连'
-const MOZI_HOME_DESCRIPTION = 'moziapi（mozi）中转站提供国内直连的 GPT API 与 OpenAI 兼容接口，支持 GPT、Grok 等大模型统一接入、按量计费，并可查看 Token 用量与费用明细。'
+const MOZI_HOME_DESCRIPTION = 'moziapi（mozi）中转站提供 GPT、Grok 等大模型 API 国内直连服务，兼容 OpenAI 接口。查看实时可用模型与价格，按量计费，提供中文接入文档和 Token 用量明细。'
 
 export interface WebSiteStructuredData {
   '@context': 'https://schema.org'

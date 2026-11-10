@@ -19,7 +19,7 @@ const (
 	homeTitle             = "GPT API 中转与 OpenAI 国内直连"
 	homeDescription       = "国内直连的 GPT API 与 OpenAI 兼容接口中转服务，支持 GPT、Codex 等大模型统一接入、按量计费、无需信用卡，并提供清晰的 Token 用量与费用明细。"
 	moziHomeTitle         = "moziapi（mozi）中转站 | GPT API 中转与 OpenAI 国内直连"
-	moziHomeDescription   = "moziapi（mozi）中转站提供国内直连的 GPT API 与 OpenAI 兼容接口，支持 GPT、Grok 等大模型统一接入、按量计费，并可查看 Token 用量与费用明细。"
+	moziHomeDescription   = "moziapi（mozi）中转站提供 GPT、Grok 等大模型 API 国内直连服务，兼容 OpenAI 接口。查看实时可用模型与价格，按量计费，提供中文接入文档和 Token 用量明细。"
 	homeKeywords          = "GPT API 中转, OpenAI API 中转, 大模型 API 中转, GPT 中转站, 国内直连 API, OpenAI 兼容接口, AI API 按量计费, 无需信用卡 API"
 	docsTitle             = "GPT 与 OpenAI API 中文接入文档"
 	docsDescription       = "GPT 与 OpenAI API 中文接入教程，涵盖 API Key、Base URL、Responses API、Chat Completions、Codex、模型调用、流式输出与费用查询。"

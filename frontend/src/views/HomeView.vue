@@ -8,15 +8,15 @@
     <header class="site-header">
       <div class="shell nav-shell">
         <RouterLink to="/" class="brand" :aria-label="`${siteName} 首页`">
-          <img v-if="siteLogo" :src="siteLogo" alt="" class="brand-logo" />
-          <span v-else class="brand-mark">{{ siteInitial }}</span>
+          <img :src="siteLogo || '/logo.svg'" alt="" class="brand-logo" />
           <span>{{ siteName }}</span>
         </RouterLink>
         <nav aria-label="主要导航">
+          <RouterLink v-if="publicModelPlazaEnabled" to="/model-plaza">模型广场</RouterLink>
+          <RouterLink to="/docs">接入文档</RouterLink>
           <a href="#recharge-event">充值活动</a>
           <a href="#advantages">产品优势</a>
           <a href="#pricing">模型价格</a>
-          <RouterLink to="/docs">接入文档</RouterLink>
         </nav>
         <RouterLink class="button button-small" :to="isAuthenticated ? dashboardPath : '/login'">
           {{ isAuthenticated ? '进入控制台' : '登录 / 注册' }}
@@ -111,7 +111,7 @@
 
       <section id="pricing" class="section pricing-section">
         <div class="shell">
-          <div class="section-heading"><div><span class="eyebrow">TRANSPARENT PRICING</span><h2>可用模型与实时分组价格。</h2></div><RouterLink v-if="appStore.cachedPublicSettings?.model_plaza_enabled && !appStore.cachedPublicSettings?.model_plaza_require_auth" class="plaza-directory-link" to="/model-plaza">查看完整模型广场 <span aria-hidden="true">↗</span></RouterLink></div>
+          <div class="section-heading"><div><span class="eyebrow">TRANSPARENT PRICING</span><h2>可用模型与实时分组价格。</h2></div><RouterLink v-if="publicModelPlazaEnabled" class="plaza-directory-link" to="/model-plaza">查看完整模型广场 <span aria-hidden="true">↗</span></RouterLink></div>
           <div class="price-panel">
             <div class="price-meta">
               <span class="eyebrow">MODEL PRICE</span>
@@ -168,7 +168,7 @@
       <section class="final-cta"><div class="shell"><span class="eyebrow">START BUILDING</span><h2>下一次模型调用，从 {{ siteName }} 开始。</h2><p>立即注册，快速接入 GPT 大模型 API。</p><RouterLink class="button" :to="isAuthenticated ? dashboardPath : '/register'">立即注册 →</RouterLink></div></section>
     </main>
 
-    <footer class="site-footer"><div class="shell footer-grid"><div><div class="brand"><span class="brand-mark">{{ siteInitial }}</span><span>{{ siteName }}</span></div><p>稳定、透明、易接入的大模型 API 中转服务。</p></div><div class="footer-links"><a href="#pricing">价格</a><RouterLink to="/docs">接入文档</RouterLink><RouterLink :to="isAuthenticated ? dashboardPath : '/login'">控制台</RouterLink></div></div><div class="shell footer-bottom"><span>© {{ currentYear }} {{ siteName }}</span><span>模型名称归其各自权利人所有</span></div></footer>
+    <footer class="site-footer"><div class="shell footer-grid"><div><div class="brand"><img :src="siteLogo || '/logo.svg'" alt="" class="brand-logo" /><span>{{ siteName }}</span></div><p>稳定、透明、易接入的大模型 API 中转服务。</p></div><div class="footer-links"><RouterLink v-if="publicModelPlazaEnabled" to="/model-plaza">模型广场</RouterLink><RouterLink to="/docs">接入文档</RouterLink><a href="#pricing">模型价格</a><a href="#recharge-event">充值活动</a><a href="#advantages">产品优势</a><a href="#quick-start">快速接入</a><RouterLink :to="isAuthenticated ? dashboardPath : '/login'">控制台</RouterLink></div></div><div class="shell footer-bottom"><span>© {{ currentYear }} {{ siteName }}</span><span>模型名称归其各自权利人所有</span></div></footer>
   </div>
 </template>
 
@@ -184,8 +184,8 @@ const appStore = useAppStore()
 const siteName = computed(() => appStore.cachedPublicSettings?.site_name || appStore.siteName || 'MoziAPI')
 const brandSearchName = computed(() => siteName.value.toLowerCase() === 'moziapi' ? 'moziapi（mozi）' : siteName.value)
 const siteNameUpper = computed(() => siteName.value.toLocaleUpperCase())
-const siteInitial = computed(() => Array.from(siteName.value.trim())[0]?.toLocaleUpperCase() || 'S')
 const siteLogo = computed(() => sanitizeUrl(appStore.cachedPublicSettings?.site_logo || appStore.siteLogo || '', { allowRelative: true, allowDataUrl: true }))
+const publicModelPlazaEnabled = computed(() => appStore.cachedPublicSettings?.model_plaza_enabled === true && appStore.cachedPublicSettings?.model_plaza_require_auth !== true)
 const homeContent = computed(() => appStore.cachedPublicSettings?.home_content || '')
 const isHomeContentUrl = computed(() => /^https?:\/\//.test(homeContent.value.trim()))
 const isAuthenticated = computed(() => authStore.isAuthenticated)
