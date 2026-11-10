@@ -139,8 +139,9 @@ describe('resolveRouteSeoMetadata', () => {
       },
     )
 
-    expect(metadata.description).toBe('包含中文搜索词的页面描述')
-    expect(metadata.structuredData?.description).toBe('包含中文搜索词的页面描述')
+    expect(metadata.title).toBe('moziapi（mozi）中转站 | GPT API 中转与 OpenAI 国内直连')
+    expect(metadata.description).toContain('moziapi（mozi）中转站')
+    expect(metadata.structuredData?.description).toBe(metadata.description)
   })
 
   it('未显式开放索引的私有页面和 404 页面均为 noindex', () => {

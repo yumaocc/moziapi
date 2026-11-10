@@ -38,8 +38,8 @@
           <div class="hero-grid">
             <div class="hero-copy">
               <div class="hero-kicker"><span>OPENAI COMPATIBLE</span><i></i><span>中国大陆直连</span></div>
-              <h1>GPT API 中转<br /><em>更快、更稳、更省</em></h1>
-              <p>国内直连的 GPT API 中转与 OpenAI 兼容接口，无需翻墙、无需信用卡；按量调用前沿大模型，每一笔 Token 消费都清晰可查。</p>
+              <h1>{{ siteName }} 中转站<br /><em>更快、更稳、更省</em></h1>
+              <p>{{ brandSearchName }} 提供国内直连的 GPT API 中转与 OpenAI 兼容接口，无需翻墙、无需信用卡；按量调用前沿大模型，每一笔 Token 消费都清晰可查。</p>
               <div class="hero-actions">
                 <RouterLink class="button hero-primary" :to="isAuthenticated ? dashboardPath : '/register'">
                   {{ isAuthenticated ? '进入控制台' : registrationCtaLabel }} <span>→</span>
@@ -182,6 +182,7 @@ const authStore = useAuthStore()
 const appStore = useAppStore()
 
 const siteName = computed(() => appStore.cachedPublicSettings?.site_name || appStore.siteName || 'MoziAPI')
+const brandSearchName = computed(() => siteName.value.toLowerCase() === 'moziapi' ? 'moziapi（mozi）' : siteName.value)
 const siteNameUpper = computed(() => siteName.value.toLocaleUpperCase())
 const siteInitial = computed(() => Array.from(siteName.value.trim())[0]?.toLocaleUpperCase() || 'S')
 const siteLogo = computed(() => sanitizeUrl(appStore.cachedPublicSettings?.site_logo || appStore.siteLogo || '', { allowRelative: true, allowDataUrl: true }))

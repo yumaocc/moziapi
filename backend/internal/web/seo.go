@@ -18,6 +18,8 @@ const (
 	defaultSiteName       = "Sub2API"
 	homeTitle             = "GPT API 中转与 OpenAI 国内直连"
 	homeDescription       = "国内直连的 GPT API 与 OpenAI 兼容接口中转服务，支持 GPT、Codex 等大模型统一接入、按量计费、无需信用卡，并提供清晰的 Token 用量与费用明细。"
+	moziHomeTitle         = "moziapi（mozi）中转站 | GPT API 中转与 OpenAI 国内直连"
+	moziHomeDescription   = "moziapi（mozi）中转站提供国内直连的 GPT API 与 OpenAI 兼容接口，支持 GPT、Grok 等大模型统一接入、按量计费，并可查看 Token 用量与费用明细。"
 	homeKeywords          = "GPT API 中转, OpenAI API 中转, 大模型 API 中转, GPT 中转站, 国内直连 API, OpenAI 兼容接口, AI API 按量计费, 无需信用卡 API"
 	docsTitle             = "GPT 与 OpenAI API 中文接入文档"
 	docsDescription       = "GPT 与 OpenAI API 中文接入教程，涵盖 API Key、Base URL、Responses API、Chat Completions、Codex、模型调用、流式输出与费用查询。"
@@ -138,6 +140,9 @@ func routeSEOForPath(requestPath string, settings siteSEOSettings) routeSEO {
 	switch requestPath {
 	case "/":
 		meta.Title = homeTitle + " - " + siteName
+		if strings.EqualFold(siteName, "moziapi") {
+			meta.Title = moziHomeTitle
+		}
 		meta.Keywords = homeKeywords
 		meta.CanonicalPath = "/"
 		meta.Robots = indexRobotsContent
@@ -166,6 +171,9 @@ func preferredSiteDescription(settings siteSEOSettings) string {
 	subtitle := strings.TrimSpace(settings.SiteSubtitle)
 	siteName := strings.TrimSpace(settings.SiteName)
 	if subtitle == "" || strings.EqualFold(subtitle, siteName) {
+		if strings.EqualFold(siteName, "moziapi") {
+			return moziHomeDescription
+		}
 		return homeDescription
 	}
 	return subtitle

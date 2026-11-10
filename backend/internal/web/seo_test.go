@@ -56,7 +56,8 @@ func TestRouteSEOForPath(t *testing.T) {
 		}
 
 		home := routeSEOForPath("/", brandOnlySettings)
-		assert.Equal(t, homeDescription, home.Description)
+		assert.Equal(t, moziHomeTitle, home.Title)
+		assert.Equal(t, moziHomeDescription, home.Description)
 	})
 
 	t.Run("keeps_private_and_transactional_routes_out_of_the_index", func(t *testing.T) {

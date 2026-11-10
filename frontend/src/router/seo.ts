@@ -7,6 +7,8 @@ import type { SiteBillingMode } from '@/utils/siteBillingMode'
 export const INDEX_ROBOTS_CONTENT =
   'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' as const
 export const NOINDEX_ROBOTS_CONTENT = 'noindex, nofollow' as const
+const MOZI_HOME_TITLE = 'moziapi（mozi）中转站 | GPT API 中转与 OpenAI 国内直连'
+const MOZI_HOME_DESCRIPTION = 'moziapi（mozi）中转站提供国内直连的 GPT API 与 OpenAI 兼容接口，支持 GPT、Grok 等大模型统一接入、按量计费，并可查看 Token 用量与费用明细。'
 
 export interface WebSiteStructuredData {
   '@context': 'https://schema.org'
@@ -115,6 +117,10 @@ function resolveDescription(route: SeoRoute, siteName?: string, siteDescription?
     return siteDescription.trim()
   }
 
+  if (route.meta.seo?.canonicalPath === '/' && normalizedSiteName.toLowerCase() === 'moziapi') {
+    return MOZI_HOME_DESCRIPTION
+  }
+
   const seoDescription = route.meta.seo?.description
   if (typeof seoDescription === 'string' && seoDescription.trim()) {
     return seoDescription.trim()
@@ -140,12 +146,15 @@ export function resolveRouteSeoMetadata(
   route: SeoRoute,
   options: ResolveRouteSeoOptions,
 ): ResolvedSeoMetadata {
-  const title = resolveRouteDocumentTitle(
+  const routeTitle = resolveRouteDocumentTitle(
     route,
     options.siteName,
     options.customMenuItems ?? [],
     { billingMode: options.billingMode },
   )
+  const title = route.meta.seo?.canonicalPath === '/' && normalizeSiteName(options.siteName).toLowerCase() === 'moziapi'
+    ? MOZI_HOME_TITLE
+    : routeTitle
   const description = resolveDescription(route, options.siteName, options.siteDescription)
   const keywords = resolveKeywords(route)
   const canonicalUrl = resolveCanonicalUrl(
