@@ -610,6 +610,27 @@ func TestFrontendServer_Middleware(t *testing.T) {
 		assert.Contains(t, sitemapWriter.Body.String(), "<loc>https://api.example.com/docs</loc>")
 	})
 
+	t.Run("makes_public_model_plaza_crawlable", func(t *testing.T) {
+		provider := &mockSettingsProvider{settings: map[string]any{
+			"site_name": "Test Site", "model_plaza_enabled": true, "model_plaza_require_auth": false,
+		}}
+		server, err := NewFrontendServer(provider)
+		require.NoError(t, err)
+		router := gin.New()
+		router.Use(server.Middleware())
+
+		page := httptest.NewRecorder()
+		request := httptest.NewRequest(http.MethodGet, "https://api.example.com/model-plaza", nil)
+		router.ServeHTTP(page, request)
+		assert.Equal(t, http.StatusOK, page.Code)
+		assert.Empty(t, page.Header().Get("X-Robots-Tag"))
+		assert.Contains(t, page.Body.String(), `rel="canonical" href="https://api.example.com/model-plaza"`)
+
+		sitemap := httptest.NewRecorder()
+		router.ServeHTTP(sitemap, httptest.NewRequest(http.MethodGet, "https://api.example.com/sitemap.xml", nil))
+		assert.Contains(t, sitemap.Body.String(), "<loc>https://api.example.com/model-plaza</loc>")
+	})
+
 	t.Run("disables_indexing_and_sitemap_in_backend_mode", func(t *testing.T) {
 		provider := &mockSettingsProvider{
 			settings: map[string]any{

@@ -1,5 +1,21 @@
 <template>
   <div class="plaza-pricing-table overflow-x-auto" :style="accentStyle">
+    <div class="table-toolbar">
+      <span>{{ showDetailed ? '完整计价明细' : '常规价格速览' }}</span>
+      <button type="button" :aria-expanded="showDetailed" @click="showDetailed = !showDetailed">{{ showDetailed ? '收起明细' : '查看完整价格' }} <span aria-hidden="true">{{ showDetailed ? '↑' : '↓' }}</span></button>
+    </div>
+    <table v-if="!showDetailed" class="summary-table" :aria-label="`${platform || '模型'}价格速览`">
+      <thead><tr><th scope="col">模型</th><th scope="col">输入</th><th scope="col">输出</th><th scope="col">计费方式</th></tr></thead>
+      <tbody>
+        <tr v-for="m in sortedModels" :key="`${m.platform}:${m.name}`">
+          <th scope="row"><strong>{{ m.name }}</strong><small v-if="tokenIntervals(m).length || timePeriods(m).length">{{ tokenIntervals(m).length ? '含上下文阶梯' : '含分时价格' }}</small></th>
+          <td class="summary-price">{{ summaryInput(m) }}</td>
+          <td class="summary-price">{{ summaryOutput(m) }}</td>
+          <td class="summary-mode">{{ m.pricing ? (billingMode(m) === BILLING_MODE_TOKEN ? '$ / 1M Tokens' : billingModeLabel(m)) : '暂无公开价格' }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <div v-else class="detail-scroll">
     <table class="w-full min-w-[1000px] table-auto border-collapse text-sm tabular-nums">
       <colgroup>
         <col class="w-[25%]" />
@@ -314,11 +330,12 @@
         </tr>
       </tbody>
     </table>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { formatScaled, resolveIntervalPrices } from '@/utils/pricing'
 import { platformAccentColor, platformBadgeLightClass, platformLabel } from '@/utils/platformColors'
@@ -344,6 +361,8 @@ function reasoningEffortMultipliers(model: PlazaModel): [string, number][] {
 
 const props = defineProps<{
   models: PlazaModel[]
+  /** 广场默认展示摘要，已有明细场景可直接打开完整表格。 */
+  defaultDetailed?: boolean
   /** 分组平台;实付分区底色随平台着色,未知平台回退品牌青。 */
   platform?: string
   /** 分组默认倍率。 */
@@ -366,6 +385,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const showDetailed = ref(props.defaultDetailed ?? false)
 
 /** 实付分区只从平台拿一个主色,浅底/标题/下划线全部由 scoped CSS 用 color-mix 派生。 */
 const accentStyle = computed(() => ({ '--plaza-accent': platformAccentColor(props.platform ?? '') }))
@@ -399,6 +419,19 @@ const hasCustomRate = computed(
 
 function billingMode(m: PlazaModel): BillingMode {
   return (m.pricing?.billing_mode || BILLING_MODE_TOKEN) as BillingMode
+}
+
+function summaryInput(m: PlazaModel): string {
+  if (billingMode(m) !== BILLING_MODE_TOKEN) {
+    const price = requestIntervals(m)[0]?.per_request_price ?? m.pricing?.per_request_price
+    return paidRequestPrice(m, price)
+  }
+  return paidPerMillion(tokenIntervals(m)[0]?.input_price ?? m.pricing?.input_price)
+}
+
+function summaryOutput(m: PlazaModel): string {
+  if (billingMode(m) !== BILLING_MODE_TOKEN) return '—'
+  return paidPerMillion(tokenIntervals(m)[0]?.output_price ?? m.pricing?.output_price)
 }
 
 function billingModeLabel(m: PlazaModel): string {
@@ -571,6 +604,29 @@ function trimZero(n: number): string {
 </script>
 
 <style scoped>
+/* Hallmark · pre-emit critique: P4 H5 E4 S5 R5 V4 · summary first, details on demand */
+.plaza-pricing-table{--table-ink:#182b24;--table-muted:#6c8076;--table-line:#e2eae4;--table-accent:#287a60;--table-soft:#f7faf7}
+.dark .plaza-pricing-table{--table-ink:#eef6f0;--table-muted:#9eafa4;--table-line:#32443a;--table-accent:#9be2b5;--table-soft:#1c2a22}
+.table-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:47px;padding:0 20px;border-bottom:1px solid var(--table-line);color:var(--table-muted);font-size:12px}
+.table-toolbar button{min-height:38px;border:0;background:none;color:var(--table-accent);font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer}
+.table-toolbar button span{margin-left:4px}
+.summary-table{width:100%;border-collapse:collapse;table-layout:fixed;font-variant-numeric:tabular-nums}
+.summary-table th:first-child{width:42%;text-align:left}
+.summary-table th:nth-child(2),.summary-table th:nth-child(3){width:19%;text-align:left}
+.summary-table th:nth-child(4){width:20%;text-align:left}
+.summary-table thead{background:var(--table-soft)}
+.summary-table thead th{height:42px;padding:0 18px;border-bottom:1px solid var(--table-line);color:var(--table-muted);font-size:11px;font-weight:600}
+.summary-table tbody tr{border-bottom:1px solid var(--table-line)}
+.summary-table tbody tr:last-child{border-bottom:0}
+.summary-table tbody tr:hover{background:var(--table-soft)}
+.summary-table tbody th,.summary-table tbody td{padding:15px 18px;vertical-align:middle}
+.summary-table tbody th{overflow-wrap:anywhere}
+.summary-table tbody th strong{display:block;color:var(--table-ink);font:600 13px/1.5 ui-monospace,monospace}
+.summary-table tbody th small{display:block;margin-top:3px;color:var(--table-muted);font-size:11px;font-weight:400}
+.summary-price{color:var(--table-ink);font:600 15px ui-monospace,monospace}
+.summary-mode{color:var(--table-muted);font-size:11px}
+.detail-scroll{overflow-x:auto}
+@media(max-width:640px){.table-toolbar{padding:0 14px}.summary-table thead th{padding:0 9px}.summary-table tbody th,.summary-table tbody td{padding:12px 9px}.summary-table th:first-child{width:43%}.summary-table th:nth-child(2),.summary-table th:nth-child(3){width:20%}.summary-table th:nth-child(4){width:17%}.summary-table tbody th strong{font-size:11px}.summary-price{font-size:12px}.summary-mode{font-size:10px;overflow-wrap:anywhere}}
 /* 实付分区配色统一从 --plaza-accent(平台主色)派生,新增平台无需扩展样式 */
 .plaza-pricing-table {
   --pz-title: color-mix(in srgb, var(--plaza-accent) 88%, black);

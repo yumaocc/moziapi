@@ -15,15 +15,17 @@ import (
 )
 
 const (
-	defaultSiteName      = "Sub2API"
-	homeTitle            = "GPT API 中转与 OpenAI 国内直连"
-	homeDescription      = "国内直连的 GPT API 与 OpenAI 兼容接口中转服务，支持 GPT、Codex 等大模型统一接入、按量计费、无需信用卡，并提供清晰的 Token 用量与费用明细。"
-	homeKeywords         = "GPT API 中转, OpenAI API 中转, 大模型 API 中转, GPT 中转站, 国内直连 API, OpenAI 兼容接口, AI API 按量计费, 无需信用卡 API"
-	docsTitle            = "GPT 与 OpenAI API 中文接入文档"
-	docsDescription      = "GPT 与 OpenAI API 中文接入教程，涵盖 API Key、Base URL、Responses API、Chat Completions、Codex、模型调用、流式输出与费用查询。"
-	docsKeywords         = "GPT API 接入教程, OpenAI API 中文文档, Responses API 文档, Chat Completions 接口, Codex API, API Key 教程, 大模型 API 文档"
-	indexRobotsContent   = "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
-	noindexRobotsContent = "noindex, nofollow"
+	defaultSiteName       = "Sub2API"
+	homeTitle             = "GPT API 中转与 OpenAI 国内直连"
+	homeDescription       = "国内直连的 GPT API 与 OpenAI 兼容接口中转服务，支持 GPT、Codex 等大模型统一接入、按量计费、无需信用卡，并提供清晰的 Token 用量与费用明细。"
+	homeKeywords          = "GPT API 中转, OpenAI API 中转, 大模型 API 中转, GPT 中转站, 国内直连 API, OpenAI 兼容接口, AI API 按量计费, 无需信用卡 API"
+	docsTitle             = "GPT 与 OpenAI API 中文接入文档"
+	docsDescription       = "GPT 与 OpenAI API 中文接入教程，涵盖 API Key、Base URL、Responses API、Chat Completions、Codex、模型调用、流式输出与费用查询。"
+	docsKeywords          = "GPT API 接入教程, OpenAI API 中文文档, Responses API 文档, Chat Completions 接口, Codex API, API Key 教程, 大模型 API 文档"
+	modelPlazaTitle       = "GPT 与 Grok 模型价格及可用列表"
+	modelPlazaDescription = "查看可用 GPT、Grok 等大模型的分组、调用倍率与输入输出价格，按平台和模型名称筛选，了解实际计费方式。"
+	indexRobotsContent    = "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+	noindexRobotsContent  = "noindex, nofollow"
 )
 
 var (
@@ -49,10 +51,12 @@ var (
 )
 
 type siteSEOSettings struct {
-	SiteName           string
-	SiteSubtitle       string
-	SiteLogo           string
-	BackendModeEnabled bool
+	SiteName              string
+	SiteSubtitle          string
+	SiteLogo              string
+	BackendModeEnabled    bool
+	ModelPlazaEnabled     bool
+	ModelPlazaRequireAuth bool
 }
 
 type routeSEO struct {
@@ -72,10 +76,12 @@ func defaultSiteSEOSettings() siteSEOSettings {
 
 func parseSiteSEOSettings(settingsJSON []byte) siteSEOSettings {
 	var raw struct {
-		SiteName           string `json:"site_name"`
-		SiteSubtitle       string `json:"site_subtitle"`
-		SiteLogo           string `json:"site_logo"`
-		BackendModeEnabled bool   `json:"backend_mode_enabled"`
+		SiteName              string `json:"site_name"`
+		SiteSubtitle          string `json:"site_subtitle"`
+		SiteLogo              string `json:"site_logo"`
+		BackendModeEnabled    bool   `json:"backend_mode_enabled"`
+		ModelPlazaEnabled     bool   `json:"model_plaza_enabled"`
+		ModelPlazaRequireAuth bool   `json:"model_plaza_require_auth"`
 	}
 	_ = json.Unmarshal(settingsJSON, &raw)
 
@@ -85,10 +91,12 @@ func parseSiteSEOSettings(settingsJSON []byte) siteSEOSettings {
 	}
 
 	return siteSEOSettings{
-		SiteName:           raw.SiteName,
-		SiteSubtitle:       strings.TrimSpace(raw.SiteSubtitle),
-		SiteLogo:           strings.TrimSpace(raw.SiteLogo),
-		BackendModeEnabled: raw.BackendModeEnabled,
+		SiteName:              raw.SiteName,
+		SiteSubtitle:          strings.TrimSpace(raw.SiteSubtitle),
+		SiteLogo:              strings.TrimSpace(raw.SiteLogo),
+		BackendModeEnabled:    raw.BackendModeEnabled,
+		ModelPlazaEnabled:     raw.ModelPlazaEnabled,
+		ModelPlazaRequireAuth: raw.ModelPlazaRequireAuth,
 	}
 }
 
@@ -141,6 +149,14 @@ func routeSEOForPath(requestPath string, settings siteSEOSettings) routeSEO {
 		meta.CanonicalPath = "/docs"
 		meta.Robots = indexRobotsContent
 		meta.Indexable = true
+	case "/model-plaza":
+		if settings.ModelPlazaEnabled && !settings.ModelPlazaRequireAuth {
+			meta.Title = modelPlazaTitle + " - " + siteName
+			meta.Description = modelPlazaDescription
+			meta.CanonicalPath = "/model-plaza"
+			meta.Robots = indexRobotsContent
+			meta.Indexable = true
+		}
 	}
 
 	return meta
@@ -161,6 +177,7 @@ func isKnownSPAPath(requestPath string) bool {
 	case "/",
 		"/setup",
 		"/docs",
+		"/model-plaza",
 		"/login",
 		"/register",
 		"/email-verify",
@@ -445,7 +462,7 @@ type sitemapURL struct {
 	Location string `xml:"loc"`
 }
 
-func sitemapXML(baseURL string, backendModeEnabled bool) []byte {
+func sitemapXML(baseURL string, backendModeEnabled bool, publicModelPlaza ...bool) []byte {
 	urlSet := sitemapURLSet{
 		XMLNS: "http://www.sitemaps.org/schemas/sitemap/0.9",
 	}
@@ -453,6 +470,9 @@ func sitemapXML(baseURL string, backendModeEnabled bool) []byte {
 		urlSet.URLs = []sitemapURL{
 			{Location: absolutePublicURL(baseURL, "/")},
 			{Location: absolutePublicURL(baseURL, "/docs")},
+		}
+		if len(publicModelPlaza) > 0 && publicModelPlaza[0] {
+			urlSet.URLs = append(urlSet.URLs, sitemapURL{Location: absolutePublicURL(baseURL, "/model-plaza")})
 		}
 	}
 

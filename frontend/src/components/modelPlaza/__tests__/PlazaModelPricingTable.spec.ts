@@ -53,11 +53,22 @@ function mountTable(
   }
 ) {
   return mount(PlazaModelPricingTable, {
-    props: { models, rateMultiplier, userRateMultiplier: userRateMultiplier ?? null, ...extraProps }
+    props: { models, rateMultiplier, userRateMultiplier: userRateMultiplier ?? null, defaultDetailed: true, ...extraProps }
   })
 }
 
 describe('PlazaModelPricingTable', () => {
+  it('defaults to a readable price summary and expands full details', async () => {
+    const wrapper = mount(PlazaModelPricingTable, { props: { models: [tokenModel()], rateMultiplier: 0.5 } })
+    expect(wrapper.find('.summary-table').exists()).toBe(true)
+    expect(wrapper.text()).toContain('$1.50')
+    expect(wrapper.text()).toContain('$7.50')
+    expect(wrapper.find('.table-toolbar button').text()).toContain('查看完整价格')
+    await wrapper.find('.table-toolbar button').trigger('click')
+    expect(wrapper.find('.detail-scroll').exists()).toBe(true)
+    expect(wrapper.text()).toContain('modelPlaza.table.officialPrice')
+    wrapper.unmount()
+  })
   it.each([false, true])('shows independent 12h prices without a 1h label (intervals=%s)', (intervals) => {
     const model = tokenModel({ name: 'gpt-6-luna', platform: 'openai' })
     model.pricing!.cache_write_price = null
@@ -541,7 +552,8 @@ describe('PlazaModelPricingTable', () => {
       props: {
         models: [anthropic, openai],
         platform: 'composite',
-        rateMultiplier: 1
+        rateMultiplier: 1,
+        defaultDetailed: true
       }
     })
 

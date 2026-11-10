@@ -224,7 +224,12 @@ const routes: RouteRecordRaw[] = [
     meta: {
       requiresAuth: false,
       title: 'Model Plaza',
-      titleKey: 'modelPlaza.title'
+      titleKey: 'modelPlaza.title',
+      seo: {
+        indexable: true,
+        description: '查看可用 GPT、Grok 等大模型的分组、调用倍率与输入输出价格，按平台和模型名称筛选，了解实际计费方式。',
+        canonicalPath: '/model-plaza',
+      }
     }
   },
 
@@ -1053,7 +1058,10 @@ router.afterEach((to) => {
     siteLogo: appStore.siteLogo,
     customMenuItems,
     basePath: import.meta.env.BASE_URL,
-    forceNoindex: appStore.backendModeEnabled,
+    forceNoindex: appStore.backendModeEnabled || (to.path === '/model-plaza' && (
+      appStore.cachedPublicSettings?.model_plaza_enabled !== true ||
+      appStore.cachedPublicSettings?.model_plaza_require_auth === true
+    )),
   })
 
   // 懒初始化预加载（首次导航时创建，传入 router 实例）

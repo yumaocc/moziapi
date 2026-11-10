@@ -1,11 +1,12 @@
 <template>
   <section
-    class="overflow-hidden rounded-2xl border bg-white shadow-card dark:bg-dark-800/50"
+    class="plaza-group overflow-hidden border bg-white dark:bg-dark-800/50"
     :class="[platformBorderStrongClass(group.platform)]"
   >
     <!-- 分组头部:名称/平台/倍率徽章/专属/订阅徽章 + 描述 -->
-    <header class="border-b border-gray-100 px-5 py-4 dark:border-dark-700/60">
-      <div class="flex flex-wrap items-center gap-2">
+    <header class="group-header border-b border-gray-100 px-5 py-4 dark:border-dark-700/60">
+      <div class="group-title-row">
+        <div class="flex flex-wrap items-center gap-2">
         <GroupBadge
           :name="group.name"
           :platform="group.platform as GroupPlatform"
@@ -31,6 +32,8 @@
         >
           {{ t('modelPlaza.badges.subscription') }}
         </span>
+        </div>
+        <span class="model-count">{{ group.models.length }} 个模型</span>
       </div>
       <p v-if="group.description" class="mt-2 text-sm text-gray-500 dark:text-dark-400">
         {{ group.description }}
@@ -121,3 +124,12 @@ const longContextNote = computed(() => {
   return hasOfficialLadder ? t('modelPlaza.detail.longContextDisabledNote') : ''
 })
 </script>
+
+<style scoped>
+.plaza-group{border-radius:9px;box-shadow:none}
+.group-header{background:color-mix(in srgb, currentColor 2%, transparent)}
+.group-title-row{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.model-count{flex:none;color:#708277;font-size:11px;white-space:nowrap}
+.dark .model-count{color:#9cae9f}
+@media(max-width:640px){.group-header{padding:14px}.group-title-row{align-items:flex-start}.model-count{padding-top:3px}}
+</style>

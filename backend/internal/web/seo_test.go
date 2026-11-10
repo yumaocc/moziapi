@@ -30,6 +30,25 @@ func TestRouteSEOForPath(t *testing.T) {
 		assert.Equal(t, docsKeywords, docs.Keywords)
 	})
 
+	t.Run("indexes_model_plaza_only_when_public", func(t *testing.T) {
+		closed := routeSEOForPath("/model-plaza", settings)
+		assert.True(t, closed.Known)
+		assert.False(t, closed.Indexable)
+		assert.Equal(t, noindexRobotsContent, closed.Robots)
+
+		publicSettings := settings
+		publicSettings.ModelPlazaEnabled = true
+		open := routeSEOForPath("/model-plaza", publicSettings)
+		assert.True(t, open.Indexable)
+		assert.Equal(t, "/model-plaza", open.CanonicalPath)
+		assert.Equal(t, modelPlazaDescription, open.Description)
+
+		publicSettings.ModelPlazaRequireAuth = true
+		private := routeSEOForPath("/model-plaza", publicSettings)
+		assert.False(t, private.Indexable)
+		assert.Empty(t, private.CanonicalPath)
+	})
+
 	t.Run("brand_only_subtitle_uses_keyword_rich_home_description", func(t *testing.T) {
 		brandOnlySettings := siteSEOSettings{
 			SiteName:     "MoziAPI",
@@ -70,7 +89,8 @@ func TestRouteSEOForPath(t *testing.T) {
 		privateSettings := settings
 		privateSettings.BackendModeEnabled = true
 
-		for _, requestPath := range []string{"/", "/docs"} {
+		privateSettings.ModelPlazaEnabled = true
+		for _, requestPath := range []string{"/", "/docs", "/model-plaza"} {
 			meta := routeSEOForPath(requestPath, privateSettings)
 			assert.True(t, meta.Known)
 			assert.False(t, meta.Indexable)
@@ -124,6 +144,10 @@ func TestRobotsAndSitemap(t *testing.T) {
 	sitemap := string(sitemapXML("https://example.com", false))
 	assert.Contains(t, sitemap, "<loc>https://example.com/</loc>")
 	assert.Contains(t, sitemap, "<loc>https://example.com/docs</loc>")
+	assert.NotContains(t, sitemap, "/model-plaza")
+
+	publicPlazaSitemap := string(sitemapXML("https://example.com", false, true))
+	assert.Contains(t, publicPlazaSitemap, "<loc>https://example.com/model-plaza</loc>")
 
 	privateSitemap := string(sitemapXML("https://example.com", true))
 	assert.NotContains(t, privateSitemap, "<loc>")

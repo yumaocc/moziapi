@@ -1,9 +1,9 @@
 <template>
-  <div class="space-y-5">
+  <div class="plaza-content">
     <!-- 页头(独立形态下展示标题;后台形态 AppHeader 已有页面标题) -->
-    <div v-if="!embedded">
-      <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-3xl">{{ t('modelPlaza.title') }}</h1>
-      <p class="mt-1.5 text-sm text-gray-500 dark:text-dark-400">{{ t('modelPlaza.description') }}</p>
+    <div v-if="!embedded" class="plaza-heading">
+      <div><span class="plaza-eyebrow">MODEL CATALOG</span><h1>{{ t('modelPlaza.title') }}</h1><p>{{ t('modelPlaza.description') }}</p></div>
+      <div v-if="!loading && !error && response" class="catalog-count"><strong>{{ totalModels }}</strong><span>个可用模型<br />{{ response.groups.length }} 个分组</span></div>
     </div>
 
     <!-- 全局价格说明(管理员配置,Markdown) -->
@@ -16,7 +16,7 @@
     <!-- 未登录提示 -->
     <p
       v-if="!isAuthenticated"
-      class="flex items-center gap-1.5 text-xs text-gray-400 dark:text-dark-500"
+      class="anonymous-hint"
     >
       <Icon name="infoCircle" size="xs" class="h-3.5 w-3.5" />
       {{ t('modelPlaza.anonymousHint') }}
@@ -49,7 +49,8 @@
       />
 
       <!-- 分组分节的模型清单(默认按生效倍率升序) -->
-      <div v-if="filteredGroups.length > 0" class="space-y-5">
+      <div v-if="filteredGroups.length > 0" class="group-list">
+        <div class="results-heading"><strong>筛选结果</strong><span>{{ filteredGroups.length }} 个分组 · {{ filteredModelCount }} 个模型</span></div>
         <PlazaGroupSection v-for="g in filteredGroups" :key="g.id" :group="g" />
       </div>
       <div
@@ -91,6 +92,8 @@ const selectedRate = ref<number | 'all'>('all')
 const searchQuery = ref('')
 
 const searchActive = computed(() => searchQuery.value.trim() !== '')
+const totalModels = computed(() => new Set((props.response?.groups ?? []).flatMap((g) => g.models.map((m) => `${m.platform}:${m.name}`))).size)
+const filteredModelCount = computed(() => new Set(filteredGroups.value.flatMap((g) => g.models.map((m) => `${m.platform}:${m.name}`))).size)
 
 const descriptionHtml = computed(() => {
   const md = props.response?.description?.trim()
@@ -154,6 +157,18 @@ const filteredGroups = computed(() => {
 </script>
 
 <style scoped>
+.plaza-content{--plaza-ink:#192b24;--plaza-muted:#728178;--plaza-accent:#307f69;--plaza-line:#dfe8e2;display:grid;gap:18px}
+.dark .plaza-content{--plaza-ink:#edf5ef;--plaza-muted:#9bada2;--plaza-accent:#9be2b5;--plaza-line:#35463a}
+.plaza-heading{display:flex;align-items:end;justify-content:space-between;gap:24px;padding:12px 0 14px;border-bottom:1px solid var(--plaza-line)}
+.plaza-eyebrow{color:var(--plaza-accent);font:700 10px ui-monospace,monospace;letter-spacing:.14em}
+.plaza-heading h1{margin:7px 0 5px;color:var(--plaza-ink);font-size:clamp(29px,4vw,42px);font-weight:600;line-height:1.2;letter-spacing:-.04em}
+.plaza-heading p{margin:0;color:var(--plaza-muted);font-size:13px}
+.catalog-count{display:flex;align-items:center;gap:12px;color:var(--plaza-muted);font-size:11px;line-height:1.5;white-space:nowrap}
+.catalog-count strong{color:var(--plaza-accent);font:600 38px ui-monospace,monospace;line-height:1}
+.anonymous-hint{display:flex;align-items:center;gap:6px;margin:0;color:var(--plaza-muted);font-size:11px}
+.group-list{display:grid;gap:18px}
+.results-heading{display:flex;align-items:baseline;gap:12px;color:var(--plaza-ink);font-size:14px}.results-heading span{color:var(--plaza-muted);font-size:11px}
+@media(max-width:640px){.plaza-content{gap:14px}.plaza-heading{align-items:start}.catalog-count{align-items:flex-end;flex-direction:column;gap:2px;text-align:right}.catalog-count strong{font-size:28px}.group-list{gap:14px}}
 .plaza-description {
   line-height: 1.7;
   overflow-wrap: anywhere;

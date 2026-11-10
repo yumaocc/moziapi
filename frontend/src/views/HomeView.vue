@@ -54,45 +54,21 @@
               </div>
             </div>
 
-            <div class="offer-console" :aria-label="`${siteName} 当前优惠与服务能力`">
-              <div class="console-bar">
-                <span><i></i> {{ siteNameUpper }} / SAVINGS CONSOLE</span>
-                <small>LIVE PRICING</small>
+            <div class="offer-console" :aria-label="`${siteName} 当前活动`">
+              <div class="offer-panel-top"><span>当前活动</span><span class="pricing-feed" :class="`is-${pricingFeedState}`"><i></i>{{ pricingFeedState === 'live' ? '实时同步' : '以控制台为准' }}</span></div>
+              <div class="offer-panel-main">
+                <span class="panel-label">模型调用倍率</span>
+                <strong class="panel-rate">{{ featuredRateLabel }}<small>×</small></strong>
+                <p>{{ featuredGroup?.name || '正在获取可用分组' }}</p>
               </div>
-              <div class="console-price">
-                <div>
-                  <span>MODEL GROUP · 当前倍率</span>
-                  <strong><b>{{ featuredRateLabel }}</b> 倍率</strong>
-                  <p>{{ featuredGroup?.name || '正在获取可用分组' }} · 实际倍率以分组配置为准</p>
-                </div>
-                <span class="price-stamp">实时分组</span>
+              <div class="offer-panel-bottom">
+                <div><span>充值到账</span><strong>{{ rechargeMultiplierLabel }} 倍</strong></div>
+                <div><span>充值 $100 可用余额</span><strong>${{ rechargeCredit(100) }}</strong></div>
               </div>
-              <div class="recharge-receipt">
-                <div class="receipt-heading"><span>RECHARGE BONUS</span><strong>{{ rechargeMultiplierLabel }}× 到账</strong></div>
-                <div class="receipt-flow">
-                  <div><small>充值金额（USD）</small><strong>$100</strong></div>
-                  <span>→</span>
-                  <div><small>账户余额（USD）</small><strong>${{ rechargeCredit(100) }}</strong></div>
-                </div>
-                <p><span>活动到账比例</span><strong>$1 充值 = ${{ rechargeCredit(1) }} 余额</strong></p>
-                <p class="receipt-unlock"><span>调用倍率</span><strong>以可用分组实时配置为准</strong></p>
-              </div>
-              <div class="console-status">
-                <div><span><i></i> DIRECT ACCESS</span><strong>无需翻墙</strong></div>
-                <div><span><i></i> ROUTING</span><strong>多路容灾</strong></div>
-                <div><span><i></i> BILLING</span><strong>明细可查</strong></div>
-              </div>
-              <div class="console-foot"><span>NO VPN · NO CREDIT CARD</span><span>PAY AS YOU GO</span></div>
+              <a href="#pricing" class="offer-panel-link">查看可用模型与价格 <span>↗</span></a>
             </div>
           </div>
 
-          <div class="hero-capabilities">
-            <span><i>✓</i> 无需信用卡</span>
-            <span><i>✓</i> 国内直连</span>
-            <span><i>✓</i> 按量计费</span>
-            <span><i>✓</i> Token 明细透明</span>
-            <span><i>✓</i> OpenAI 接口兼容</span>
-          </div>
         </div>
       </section>
 
@@ -116,11 +92,6 @@
               <div><span>充值</span><strong>$10</strong><i>→</i><span>余额</span><b>${{ rechargeCredit(10) }}</b></div>
               <div><span>充值</span><strong>$100</strong><i>→</i><span>余额</span><b>${{ rechargeCredit(100) }}</b></div>
             </div>
-            <div class="event-rules" aria-label="活动规则">
-              <div><b>01</b><span><strong>任意金额</strong><small>充值后按可用分组实时倍率计费</small></span></div>
-              <div><b>02</b><span><strong>{{ rechargeBonusLabel }}</strong><small>充值 $1，账户余额到账 ${{ rechargeCredit(1) }}</small></span></div>
-              <div><b>03</b><span><strong>实时配置</strong><small>模型及调用倍率以可用分组为准</small></span></div>
-            </div>
             <div class="event-footer">
               <p>实际可用分组、调用倍率及到账额度以控制台实时显示为准。</p>
               <RouterLink class="button event-button" :to="isAuthenticated ? '/payment' : '/register'">{{ isAuthenticated ? '立即充值' : '注册参与活动' }} <span>→</span></RouterLink>
@@ -140,12 +111,17 @@
 
       <section id="pricing" class="section pricing-section">
         <div class="shell">
-          <div class="section-heading"><div><span class="eyebrow">TRANSPARENT PRICING</span><h2>可用模型与实时分组价格。</h2></div></div>
+          <div class="section-heading"><div><span class="eyebrow">TRANSPARENT PRICING</span><h2>可用模型与实时分组价格。</h2></div><RouterLink v-if="appStore.cachedPublicSettings?.model_plaza_enabled && !appStore.cachedPublicSettings?.model_plaza_require_auth" class="plaza-directory-link" to="/model-plaza">查看完整模型广场 <span aria-hidden="true">↗</span></RouterLink></div>
           <div class="price-panel">
             <div class="price-meta">
               <span class="eyebrow">MODEL PRICE</span>
               <span class="pricing-feed" :class="`is-${pricingFeedState}`" aria-live="polite"><i></i>{{ pricingFeedLabel }}</span>
               <span>计价单位：USD / 1M Tokens（100 万 Tokens）</span>
+            </div>
+            <div v-if="modelPrices.length" class="model-categories" role="group" aria-label="模型分类">
+              <button v-for="category in modelCategories" :key="category.name" type="button" class="category-button" :class="{ active: selectedCategory === category.name }" :aria-pressed="selectedCategory === category.name" @click="selectedCategory = category.name">
+                {{ category.name }} <span>{{ category.count }}</span>
+              </button>
             </div>
             <div class="price-table" role="table" aria-label="可用模型价格对比">
               <div class="price-row price-head" role="row">
@@ -154,7 +130,7 @@
                 <span>输入<small>官方 / {{ siteName }}</small></span>
                 <span>缓存输入<small>官方 / {{ siteName }}</small></span>
               </div>
-              <div v-for="model in modelPrices" :key="`${model.groupId}:${model.platform}:${model.name}`" class="price-row" role="row">
+              <div v-for="model in filteredModelPrices" :key="`${model.groupId}:${model.platform}:${model.name}`" class="price-row" role="row">
                 <div class="model-cell"><strong>{{ model.name }}</strong><small>{{ model.groupName }} · {{ formatHomepageNumber(model.rate) }} 倍率</small></div>
                 <div class="price-compare" data-label="输出">
                   <span>{{ compactMoney(model.officialOutput) }}</span><i>/</i><strong>{{ compactMoney(model.actualOutput) }}</strong><small>/ 1M Tokens</small>
@@ -276,6 +252,28 @@ const modelPrices = computed<HomepageModelPrice[]>(() => groups.value.flatMap((g
   actualCachedInput: perMillion(model.pricing?.cache_read_price),
   actualOutput: perMillion(model.pricing?.output_price)
 }))))
+const selectedCategory = ref('全部')
+const categoryForModel = (model: HomepageModelPrice) => {
+  const identity = `${model.platform} ${model.name}`.toLowerCase()
+  if (/grok|xai|x\.ai/.test(identity)) return 'Grok'
+  if (/gpt|openai|o[134](?:-|\b)/.test(identity)) return 'GPT'
+  if (/claude|anthropic/.test(identity)) return 'Claude'
+  if (/gemini|google/.test(identity)) return 'Gemini'
+  if (/deepseek/.test(identity)) return 'DeepSeek'
+  if (/qwen|通义|alibaba/.test(identity)) return '通义千问'
+  return model.platform || '其他'
+}
+const modelCategories = computed(() => {
+  const counts = new Map<string, number>()
+  for (const model of modelPrices.value) {
+    const category = categoryForModel(model)
+    counts.set(category, (counts.get(category) || 0) + 1)
+  }
+  return [{ name: '全部', count: modelPrices.value.length }, ...[...counts].map(([name, count]) => ({ name, count }))]
+})
+const filteredModelPrices = computed(() => selectedCategory.value === '全部'
+  ? modelPrices.value
+  : modelPrices.value.filter((model) => categoryForModel(model) === selectedCategory.value))
 const pricingFeedState = ref<'loading' | 'live' | 'unavailable'>('loading')
 const pricingFeedLabel = computed(() => ({
   loading: '正在同步可用模型',
@@ -288,6 +286,7 @@ const loadModelPricing = async () => {
   try {
     const response = await getHomepageModels()
     groups.value = response.groups.filter((group) => group.subscription_type === 'standard' && group.models.length > 0)
+    if (!modelCategories.value.some((category) => category.name === selectedCategory.value)) selectedCategory.value = '全部'
     pricingFeedState.value = groups.value.length > 0 ? 'live' : 'unavailable'
   } catch {
     groups.value = []
@@ -319,4 +318,118 @@ onMounted(() => {
 @media(max-width:900px){.event-rules{grid-template-columns:1fr}.event-rules>div{border-right:0;border-bottom:1px solid #293642}.event-rules>div:last-child{border-bottom:0}}
 @media(max-width:640px){.console-price p{max-width:210px;line-height:1.45}.event-rules>div{padding:13px 14px}}
 @media(prefers-reduced-motion:reduce){.mozi-home *{scroll-behavior:auto!important;transition:none!important}}
+
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R4 V4 · MoziAPI locked design */
+.mozi-home{
+  --color-canvas:#090d0c;--color-surface:#101715;--color-raised:#15201c;
+  --color-border:#2b3a32;--color-ink:#f1f5f0;--color-soft:#bac8bd;
+  --color-faint:#839589;--color-accent:#9be2b5;--color-accent-ink:#102117;
+  --font-body:'Noto Sans SC',system-ui,sans-serif;--font-data:ui-monospace,monospace;
+  background:var(--color-canvas);color:var(--color-ink);font-family:var(--font-body)
+}
+.mozi-home .shell{--shell:1160px}
+.mozi-home .site-header{background:var(--color-canvas);border-color:var(--color-border)}
+.mozi-home .nav-shell{height:68px}
+.mozi-home .brand{font-size:17px;letter-spacing:-.03em}
+.mozi-home .brand-mark{background:var(--color-accent);color:var(--color-accent-ink);font-family:var(--font-data)}
+.mozi-home .button{border-color:var(--color-accent);background:var(--color-accent);color:var(--color-accent-ink)!important;box-shadow:none}
+.mozi-home .button:hover{box-shadow:none}
+.mozi-home .hero{min-height:0;padding:18px 0 0;background:var(--color-canvas)}
+.mozi-home .hero:before{display:none}
+.mozi-home .hero-offer{min-height:46px;border-color:var(--color-border);background:var(--color-surface);color:var(--color-soft)}
+.mozi-home .hero-offer strong{color:var(--color-ink)}
+.mozi-home .offer-live,.mozi-home .offer-link b{color:var(--color-accent)}
+.mozi-home .hero-grid{grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);gap:clamp(32px,6vw,88px);padding:92px 0 100px}
+.mozi-home .hero-kicker,.mozi-home .eyebrow{color:var(--color-accent)}
+.mozi-home .hero h1{max-width:670px;margin:18px 0 22px;font-size:clamp(46px,5.6vw,74px);font-weight:600;line-height:1.14;letter-spacing:-.045em;overflow-wrap:anywhere}
+.mozi-home .hero h1 em{color:var(--color-accent)}
+.mozi-home .hero-copy>p{max-width:560px;color:var(--color-soft);font-size:16px;line-height:1.85}
+.mozi-home .hero-proof{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:42px;border-color:var(--color-border)}
+.mozi-home .hero-proof>div{min-height:68px;background:transparent;border-color:var(--color-border)}
+.mozi-home .proof-icon{border:0;color:var(--color-accent);font-family:var(--font-data);font-size:19px}
+.mozi-home .hero-proof strong{color:var(--color-ink)}
+.mozi-home .hero-proof small{color:var(--color-faint)}
+.mozi-home .hero-secondary{background:transparent;border-color:var(--color-border);color:var(--color-ink)!important}
+.mozi-home .offer-console{background:var(--color-surface);border-color:var(--color-border);border-radius:9px;box-shadow:none}
+.mozi-home .offer-console:before{display:none}
+.offer-panel-top,.offer-panel-bottom>div,.offer-panel-link{display:flex;align-items:center;justify-content:space-between}
+.offer-panel-top{padding:18px 24px;border-bottom:1px solid var(--color-border);color:var(--color-soft);font-size:13px;font-weight:600}
+.offer-panel-top .pricing-feed{color:var(--color-faint);font-size:11px;font-weight:400}
+.offer-panel-main{padding:40px 28px 43px}
+.panel-label,.offer-panel-bottom span{color:var(--color-faint);font-size:12px}
+.panel-rate{display:block;margin:7px 0 0;color:var(--color-accent);font:600 clamp(72px,8vw,112px)/1 var(--font-data);letter-spacing:-.09em}
+.panel-rate small{margin-left:12px;color:var(--color-soft);font-size:28px;letter-spacing:0}
+.offer-panel-main p{margin:10px 0 0;color:var(--color-soft);font-size:13px}
+.offer-panel-bottom{padding:0 28px;border-block:1px solid var(--color-border)}
+.offer-panel-bottom>div{min-height:57px;gap:12px;border-bottom:1px solid var(--color-border)}
+.offer-panel-bottom>div:last-child{border-bottom:0}
+.offer-panel-bottom strong{color:var(--color-ink);font:600 17px var(--font-data)}
+.offer-panel-link{min-height:56px;padding:0 28px;color:var(--color-accent)!important;font-size:13px;font-weight:600}
+.mozi-home .model-strip{background:var(--color-surface);border-color:var(--color-border)}
+.mozi-home .model-strip .shell{justify-content:flex-start;gap:clamp(24px,5vw,74px);height:64px;overflow:hidden;white-space:nowrap;color:var(--color-faint)}
+.mozi-home .recharge-event{padding:80px 0;background:var(--color-surface);border-color:var(--color-border)}
+.mozi-home .recharge-event-grid{grid-template-columns:240px minmax(0,1fr);gap:70px}
+.mozi-home .recharge-event-lead{min-height:330px;background:var(--color-raised);border-color:var(--color-border)}
+.mozi-home .event-multiplier{color:var(--color-accent);font:600 132px/.95 var(--font-data)}
+.mozi-home .event-tag{color:var(--color-soft)}
+.mozi-home .recharge-event-content h2{font-size:clamp(34px,4vw,50px);font-weight:600;letter-spacing:-.04em}
+.mozi-home .recharge-event-content h2 em{color:var(--color-accent)}
+.mozi-home .event-description{color:var(--color-soft)}
+.mozi-home .event-description strong{color:var(--color-ink)}
+.mozi-home .event-examples{border-color:var(--color-border)}
+.mozi-home .event-examples>div{border-color:var(--color-border)}
+.mozi-home .event-examples b{color:var(--color-accent)}
+.mozi-home .section{padding:94px 0}
+.mozi-home .section-heading{margin-bottom:36px}
+.mozi-home .section-heading h2,.mozi-home .center-heading h2,.mozi-home .faq-grid h2{font-weight:600;letter-spacing:-.04em}
+.mozi-home .advantages-section,.mozi-home .pricing-section{background:var(--color-canvas);border-color:var(--color-border)}
+.mozi-home .advantage-grid{border-color:var(--color-border)}
+.mozi-home .advantage-card{min-height:190px;padding:26px;background:transparent;border-color:var(--color-border)}
+.mozi-home .advantage-card h3{margin:24px 0 8px}
+.mozi-home .advantage-card p{color:var(--color-faint)}
+.mozi-home .price-panel{background:var(--color-surface);border-color:var(--color-border)}
+.mozi-home .price-meta{min-height:54px;border-color:var(--color-border);color:var(--color-faint)}
+.model-categories{display:flex;flex-wrap:wrap;gap:8px;padding:16px 22px;border-bottom:1px solid var(--color-border)}
+.category-button{display:inline-flex;min-height:39px;align-items:center;gap:10px;padding:0 14px;border:1px solid var(--color-border);border-radius:6px;background:transparent;color:var(--color-soft);font:600 13px var(--font-body);cursor:pointer;white-space:nowrap}
+.category-button span{color:var(--color-faint);font:11px var(--font-data)}
+.category-button:hover{border-color:var(--color-accent);color:var(--color-ink)}
+.category-button.active{border-color:var(--color-accent);background:var(--color-accent);color:var(--color-accent-ink)}
+.category-button.active span{color:var(--color-accent-ink)}
+.mozi-home .price-head{background:var(--color-raised);color:var(--color-soft)}
+.mozi-home .price-row{border-color:var(--color-border)}
+.mozi-home .model-cell strong{color:var(--color-ink)}
+.mozi-home .price-compare strong{color:var(--color-accent)}
+.mozi-home .price-note{border-color:var(--color-border);color:var(--color-faint)}
+.mozi-home .pricing-cta{background:var(--color-raised);border-color:var(--color-border)}
+.mozi-home .pricing-cta strong{color:var(--color-accent)}
+.plaza-directory-link{justify-self:end;align-self:end;display:inline-flex;min-height:44px;align-items:center;gap:10px;color:var(--color-accent)!important;font-size:13px;font-weight:600;white-space:nowrap}
+@media(max-width:900px){
+  .mozi-home .hero-grid{grid-template-columns:minmax(0,1fr);gap:32px;padding:56px 0}
+  .mozi-home .offer-console{width:100%}
+  .mozi-home .recharge-event-grid{grid-template-columns:minmax(0,1fr);gap:32px}
+  .mozi-home .recharge-event-lead{min-height:210px}
+  .plaza-directory-link{justify-self:start}
+}
+@media(max-width:640px){
+  .mozi-home .hero-grid{padding:38px 0 48px}
+  .mozi-home .hero h1{font-size:clamp(35px,10vw,44px);letter-spacing:-.045em}
+  .mozi-home .hero-copy>p{font-size:14px}
+  .mozi-home .hero-proof{margin-top:25px}
+  .mozi-home .offer-panel-main{padding:26px 20px}
+  .mozi-home .panel-rate{font-size:68px}
+  .mozi-home .offer-panel-bottom{padding:0 20px}
+  .mozi-home .offer-panel-link{padding:0 20px}
+  .mozi-home .recharge-event{padding:60px 0}
+  .mozi-home .recharge-event-lead{min-height:180px}
+  .mozi-home .event-multiplier{top:36px;left:20px;font-size:74px}
+  .mozi-home .recharge-event-lead p{align-self:flex-end;font-size:18px;text-align:right}
+  .mozi-home .section{padding:70px 0}
+  .mozi-home .price-row{grid-template-columns:minmax(0,1fr);gap:8px}
+  .mozi-home .model-cell{grid-column:1}
+  .mozi-home .price-compare{display:grid;grid-template-columns:65px auto 8px auto;justify-content:start;align-items:center;gap:5px}
+  .mozi-home .price-compare:before{grid-column:1;flex-basis:auto;margin:0}
+  .mozi-home .price-compare small{display:none}
+  .model-categories{flex-wrap:nowrap;overflow-x:auto;padding:12px 16px;scrollbar-width:thin}
+  .category-button{flex:none}
+}
 </style>

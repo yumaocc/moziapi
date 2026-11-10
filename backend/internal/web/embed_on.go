@@ -264,7 +264,7 @@ func (s *FrontendServer) serveSitemap(c *gin.Context) {
 	defer cancel()
 	settings := s.currentSEOSettings(ctx)
 	c.Header("Cache-Control", "public, max-age=3600")
-	c.Data(http.StatusOK, "application/xml; charset=utf-8", sitemapXML(publicRequestBaseURL(c.Request), settings.BackendModeEnabled))
+	c.Data(http.StatusOK, "application/xml; charset=utf-8", sitemapXML(publicRequestBaseURL(c.Request), settings.BackendModeEnabled, settings.ModelPlazaEnabled && !settings.ModelPlazaRequireAuth))
 	c.Abort()
 }
 
