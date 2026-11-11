@@ -775,16 +775,10 @@ export default {
         maxAmount: 'Maximum Recharge (USD)',
         dailyLimit: 'Daily Recharge Limit (USD)',
         balanceRechargeMultiplier: 'Balance Recharge Multiplier',
-<<<<<<< HEAD
         balanceRechargeMultiplierHint:
           'Promotional credit multiplier; set 3 so a $1 recharge credits $3 to the account',
         balanceRechargePreview: 'Promotion example: recharge $1 → credit ${usd}',
         subscriptionUsdToCnyRate: 'USD to CNY Payment Rate',
-=======
-        balanceRechargeMultiplierHint: 'How many USD balance the user receives for each 1 CNY paid (up to 6 decimal places, e.g. for live FX rates)',
-        balanceRechargePreview: 'Preview: 1 CNY = {usd} USD',
-        subscriptionUsdToCnyRate: 'Subscription USD to CNY Rate',
->>>>>>> upstream/main
         subscriptionUsdToCnyRateHint:
           'CNY charged per 1 USD on gateways such as WeChat Pay and Alipay (e.g. 7.15). Applies to balance recharges and subscriptions; 0 or empty disables conversion',
         subscriptionUsdToCnyRateDisabled: 'Disabled (amount charged as-is)',

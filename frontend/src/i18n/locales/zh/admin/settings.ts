@@ -770,16 +770,10 @@ export default {
         maxAmount: '最高充值金额（USD）',
         dailyLimit: '每日充值限额（USD）',
         balanceRechargeMultiplier: '余额充值倍率',
-<<<<<<< HEAD
         balanceRechargeMultiplierHint:
           '充值活动到账倍率；设置为 3 即用户充值 $1，账户余额到账 $3',
         balanceRechargePreview: '活动示例：充值 $1 → 到账 ${usd}',
         subscriptionUsdToCnyRate: 'USD → CNY 支付换算汇率',
-=======
-        balanceRechargeMultiplierHint: '用户每支付 1 CNY 可获得多少 USD 余额（最多 6 位小数，可按实时汇率配置）',
-        balanceRechargePreview: '预览：1 CNY = {usd} USD',
-        subscriptionUsdToCnyRate: '订阅 CNY 换算汇率',
->>>>>>> upstream/main
         subscriptionUsdToCnyRateHint:
           '微信、支付宝等 CNY 通道每 1 USD 收取多少 CNY（如 7.15）。同时作用于余额充值和订阅；0 或留空表示不换算',
         subscriptionUsdToCnyRateDisabled: '未启用（金额数值直付）',
