@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
-  <title id="title">moziapi</title>
-  <desc id="desc">深色圆角方形中的薄荷绿色 m 标记</desc>
-  <rect x="8" y="8" width="496" height="496" rx="112" fill="#0b1720"/>
-  <rect x="9.5" y="9.5" width="493" height="493" rx="110.5" fill="none" stroke="#31594c" stroke-width="3"/>
-  <path d="M112 359V212c0-49 30-79 74-79 42 0 70 26 70 70 0-44 28-70 70-70 44 0 74 30 74 79v147" fill="none" stroke="#79f2c0" stroke-width="64" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>

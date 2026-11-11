@@ -3,8 +3,7 @@
     <header class="docs-header">
       <div class="shell nav-shell">
         <RouterLink to="/" class="brand" aria-label="返回首页">
-          <img v-if="siteLogo" :src="siteLogo" alt="" class="brand-logo" />
-          <span v-else class="brand-mark">{{ siteInitial }}</span>
+          <img :src="siteLogo || '/mark.png'" alt="" class="brand-logo" />
           <span>{{ siteName }}</span>
         </RouterLink>
         <nav aria-label="文档导航">
@@ -207,7 +206,6 @@ const authStore = useAuthStore()
 const appStore = useAppStore()
 const siteName = computed(() => appStore.cachedPublicSettings?.site_name || appStore.siteName || 'MoziAPI')
 const siteNameUpper = computed(() => siteName.value.toLocaleUpperCase())
-const siteInitial = computed(() => Array.from(siteName.value.trim())[0]?.toLocaleUpperCase() || 'S')
 const siteLogo = computed(() => sanitizeUrl(appStore.cachedPublicSettings?.site_logo || appStore.siteLogo || '', { allowRelative: true, allowDataUrl: true }))
 const isAuthenticated = computed(() => authStore.isAuthenticated)
 const dashboardPath = computed(() => authStore.isAdmin ? '/admin/dashboard' : '/dashboard')

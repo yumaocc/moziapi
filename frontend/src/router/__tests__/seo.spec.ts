@@ -59,7 +59,7 @@ describe('resolveRouteSeoMetadata', () => {
       '@type': 'WebSite',
       name: 'Example API',
       url: 'https://api.example.com/',
-      image: 'https://api.example.com/logo.svg',
+      image: 'https://api.example.com/logo.png',
       description: '可配置的站点副标题',
       inLanguage: 'zh-CN',
     })
@@ -263,7 +263,7 @@ describe('applySeoMetadata', () => {
         '@type': 'WebSite',
         name: 'Example API',
         url: 'https://api.example.com/',
-        image: 'https://api.example.com/logo.svg',
+        image: 'https://api.example.com/logo.png',
         description: '首页描述',
         inLanguage: 'zh-CN',
       },

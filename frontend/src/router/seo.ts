@@ -95,7 +95,7 @@ function resolvePublicAssetUrl(
   const configuredUrl = assetUrl?.trim()
 
   try {
-    const resolved = new URL(configuredUrl || 'logo.svg', baseUrl)
+    const resolved = new URL(configuredUrl || 'logo.png', baseUrl)
     if (resolved.protocol === 'http:' || resolved.protocol === 'https:') {
       return resolved.href
     }
@@ -103,7 +103,7 @@ function resolvePublicAssetUrl(
     // Fall through to the safe, same-origin default.
   }
 
-  return new URL('logo.svg', baseUrl).href
+  return new URL('logo.png', baseUrl).href
 }
 
 function resolveDescription(route: SeoRoute, siteName?: string, siteDescription?: string): string {

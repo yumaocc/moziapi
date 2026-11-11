@@ -8,7 +8,7 @@
     <header class="site-header">
       <div class="shell nav-shell">
         <RouterLink to="/" class="brand" :aria-label="`${siteName} 首页`">
-          <img :src="siteLogo || '/logo.svg'" alt="" class="brand-logo" />
+          <img :src="siteLogo || '/mark.png'" alt="" class="brand-logo" />
           <span>{{ siteName }}</span>
         </RouterLink>
         <nav aria-label="主要导航">
@@ -168,7 +168,7 @@
       <section class="final-cta"><div class="shell"><span class="eyebrow">START BUILDING</span><h2>下一次模型调用，从 {{ siteName }} 开始。</h2><p>立即注册，快速接入 GPT 大模型 API。</p><RouterLink class="button" :to="isAuthenticated ? dashboardPath : '/register'">立即注册 →</RouterLink></div></section>
     </main>
 
-    <footer class="site-footer"><div class="shell footer-grid"><div><div class="brand"><img :src="siteLogo || '/logo.svg'" alt="" class="brand-logo" /><span>{{ siteName }}</span></div><p>稳定、透明、易接入的大模型 API 中转服务。</p></div><div class="footer-links"><RouterLink v-if="publicModelPlazaEnabled" to="/model-plaza">模型广场</RouterLink><RouterLink to="/docs">接入文档</RouterLink><a href="#pricing">模型价格</a><a href="#recharge-event">充值活动</a><a href="#advantages">产品优势</a><a href="#quick-start">快速接入</a><RouterLink :to="isAuthenticated ? dashboardPath : '/login'">控制台</RouterLink></div></div><div class="shell footer-bottom"><span>© {{ currentYear }} {{ siteName }}</span><span>模型名称归其各自权利人所有</span></div></footer>
+    <footer class="site-footer"><div class="shell footer-grid"><div><div class="brand"><img :src="siteLogo || '/mark.png'" alt="" class="brand-logo" /><span>{{ siteName }}</span></div><p>稳定、透明、易接入的大模型 API 中转服务。</p></div><div class="footer-links"><RouterLink v-if="publicModelPlazaEnabled" to="/model-plaza">模型广场</RouterLink><RouterLink to="/docs">接入文档</RouterLink><a href="#pricing">模型价格</a><a href="#recharge-event">充值活动</a><a href="#advantages">产品优势</a><a href="#quick-start">快速接入</a><RouterLink :to="isAuthenticated ? dashboardPath : '/login'">控制台</RouterLink></div></div><div class="shell footer-bottom"><span>© {{ currentYear }} {{ siteName }}</span><span>模型名称归其各自权利人所有</span></div></footer>
   </div>
 </template>
 

@@ -298,9 +298,9 @@ func publicImageURL(baseURL, configuredLogo string) string {
 		}
 	}
 	if baseURL == "" {
-		return "/logo.svg"
+		return "/logo.png"
 	}
-	return strings.TrimRight(baseURL, "/") + "/logo.svg"
+	return strings.TrimRight(baseURL, "/") + "/logo.png"
 }
 
 func renderRouteSEO(html []byte, meta routeSEO, settings siteSEOSettings, baseURL, nonce string) []byte {
