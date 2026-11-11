@@ -770,10 +770,16 @@ export default {
         maxAmount: '最高充值金额（USD）',
         dailyLimit: '每日充值限额（USD）',
         balanceRechargeMultiplier: '余额充值倍率',
+<<<<<<< HEAD
         balanceRechargeMultiplierHint:
           '充值活动到账倍率；设置为 3 即用户充值 $1，账户余额到账 $3',
         balanceRechargePreview: '活动示例：充值 $1 → 到账 ${usd}',
         subscriptionUsdToCnyRate: 'USD → CNY 支付换算汇率',
+=======
+        balanceRechargeMultiplierHint: '用户每支付 1 CNY 可获得多少 USD 余额（最多 6 位小数，可按实时汇率配置）',
+        balanceRechargePreview: '预览：1 CNY = {usd} USD',
+        subscriptionUsdToCnyRate: '订阅 CNY 换算汇率',
+>>>>>>> upstream/main
         subscriptionUsdToCnyRateHint:
           '微信、支付宝等 CNY 通道每 1 USD 收取多少 CNY（如 7.15）。同时作用于余额充值和订阅；0 或留空表示不换算',
         subscriptionUsdToCnyRateDisabled: '未启用（金额数值直付）',
@@ -890,6 +896,8 @@ export default {
         field_cid: '支付渠道 ID',
         field_cidAlipay: '支付宝渠道 ID',
         field_cidWxpay: '微信渠道 ID',
+        field_refundSuccessCode: '退款成功码',
+        field_refundSuccessCodeHint: '按当前网关的退款接口文档选择成功码。默认 1（如 ZPAY），仅在网关文档规定时选择 0。此设置只影响退款，下单和查单仍要求成功码为 1。',
         easypayCustomMethods: '易支付自定义支付方式',
         easypayCustomMethodsHint: '添加当前易支付服务商额外支持的支付方式。支付方式会记录到 Sub2API 订单中，上游 type 会作为易支付 type 参数提交。',
         addCustomMethod: '添加方式',
